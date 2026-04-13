@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dale Click | Emprendedores</title>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap"
+    rel="stylesheet"
+  />
+
+  <!-- Google Icons -->
+  <link
+    rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0"
+  />
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="../assets/css/variables.css" />
+  <link rel="stylesheet" href="../assets/css/global.css" />
+  <link rel="stylesheet" href="../assets/css/layout.css" />
+  <link rel="stylesheet" href="../assets/css/sellers.css" />
+  <link rel="stylesheet" href="../assets/css/responsive.css" />
+  <link rel="stylesheet" href="../assets/css/animations.css" />
+</head>
+<body>
+  <div class="page-wrapper">
+    <!-- HEADER -->
+    <header class="main-header">
+      <div class="container header-container">
+        <a href="./index.html" class="logo-link">
+          <img
+            src="../assets/images/logo-dale-click.png"
+            alt="Logo de Dale Click"
+            class="logo"
+          />
+        </a>
+
+        <nav class="main-nav" aria-label="Navegación principal">
+          <ul class="nav-list">
+            <li><a href="./index.html" class="nav-link">Inicio</a></li>
+            <li><a href="./discounts.html" class="nav-link">Descuentos</a></li>
+            <li><a href="./sellers.html" class="nav-link active">Emprendedores</a></li>
+          </ul>
+        </nav>
+
+        <div class="header-actions">
+          <a href="./login.html" class="btn btn-outline">Iniciar sesión</a>
+          <a href="./register.html" class="btn btn-text">Crear cuenta</a>
+        </div>
+      </div>
+    </header>
+
+    <!-- MAIN -->
+    <main>
+      <!-- HERO -->
+      <section class="sellers-hero-section">
+        <div class="container">
+          <div class="sellers-hero-card">
+            <div class="sellers-hero-content">
+              <p class="sellers-hero-badge">Emprendedores Dale Click</p>
+              <h1>Descubre negocios y emprendimientos</h1>
+              <p>
+                Conoce marcas, tiendas y emprendimientos universitarios que forman
+                parte de Dale Click. Explora sus perfiles, sus categorías disponibles
+                y sus productos.
+              </p>
+            </div>
+
+            <div class="sellers-hero-icon">
+              <span class="material-symbols-outlined">storefront</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- FILTROS -->
+      <section class="sellers-toolbar-section">
+        <div class="container">
+          <div class="sellers-toolbar">
+            <div class="sellers-search-area">
+              <label for="sellers-search-input" class="toolbar-label">
+                Buscar emprendedor
+              </label>
+
+              <div class="sellers-search-wrapper">
+                <span class="material-symbols-outlined">search</span>
+                <input
+                  type="text"
+                  id="sellers-search-input"
+                  placeholder="Escribe el nombre del negocio"
+                  aria-label="Buscar emprendedor"
+                />
+              </div>
+            </div>
+
+            <div class="sellers-filter-area">
+              <label for="sellers-type-filter" class="toolbar-label">
+                Tipo de emprendimiento
+              </label>
+
+              <div class="filters-select-wrapper">
+                <select id="sellers-type-filter" aria-label="Filtrar por tipo de emprendimiento">
+                  <option value="todos">Todos</option>
+                  <option value="universitario">Emprendimiento universitario</option>
+                  <option value="local">Negocio local</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="sellers-filter-area">
+              <label for="sellers-university-filter" class="toolbar-label">
+                Universidad
+              </label>
+
+              <div class="filters-select-wrapper">
+                <select id="sellers-university-filter" aria-label="Filtrar por universidad">
+                  <option value="todas">Todas</option>
+                  <option value="keiser-managua">Keiser University Latin American Campus (Managua)</option>
+                  <option value="keiser-san-marcos">Keiser University Latin American Campus (San Marcos)</option>
+                  <option value="uam">UAM</option>
+                  <option value="uni">UNI</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="sellers-filter-area">
+              <label for="sellers-location-filter" class="toolbar-label">
+                Ubicación
+              </label>
+
+              <div class="filters-select-wrapper">
+                <select id="sellers-location-filter" aria-label="Filtrar por ubicación">
+                  <option value="todas">Todas las ubicaciones</option>
+                  <option value="san-marcos">San Marcos</option>
+                  <option value="managua">Managua</option>
+                  <option value="esquipulas">Esquipulas</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- RESULTADOS -->
+      <section class="sellers-results-section">
+        <div class="container">
+          <div class="sellers-results-header">
+            <div>
+              <h2>Emprendedores disponibles</h2>
+              <p id="sellers-results-count">Cargando emprendedores...</p>
+            </div>
+          </div>
+
+          <div class="sellers-grid" id="sellers-grid"></div>
+
+          <p class="no-results" id="sellers-no-results">
+            No encontramos emprendedores con esos filtros.
+          </p>
+        </div>
+      </section>
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="main-footer">
+      <div class="container footer-container">
+        <h2 class="footer-title">
+          Vuélvete un emprendedor con nosotros.
+          <span>Más información</span>
+        </h2>
+
+        <div class="footer-links">
+          <a href="#">Sobre nosotros</a>
+          <a href="#">Contacto</a>
+          <a href="#">Ayuda</a>
+        </div>
+
+        <div class="footer-social">
+          <a href="#" aria-label="Facebook">
+            <span class="material-symbols-outlined">public</span>
+          </a>
+          <a href="#" aria-label="Instagram">
+            <span class="material-symbols-outlined">photo_camera</span>
+          </a>
+          <a href="#" aria-label="Otra red social">
+            <span class="material-symbols-outlined">language</span>
+          </a>
+        </div>
+      </div>
+    </footer>
+  </div>
+
+  <script src="../assets/js/main.js"></script>
+  <script src="../assets/js/animations.js"></script>
+  <script src="../assets/js/sellers.js"></script>
+</body>
+</html>

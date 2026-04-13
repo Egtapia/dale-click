@@ -1,0 +1,108 @@
+/* TRANSICIONES GENERALES */
+a,
+button,
+input,
+select,
+textarea,
+.card,
+.product-card,
+.seller-card,
+.discount-card,
+.account-content-card,
+.account-user-card,
+.seller-info-card,
+.product-detail-panel,
+.reservation-card,
+.custom-modal,
+.user-menu-dropdown {
+  transition:
+    transform 0.28s ease,
+    box-shadow 0.28s ease,
+    background-color 0.25s ease,
+    color 0.25s ease,
+    border-color 0.25s ease,
+    opacity 0.35s ease;
+}
+
+/* BOTONES */
+.btn:hover,
+button:hover {
+  transform: translateY(-2px);
+}
+
+.btn:active,
+button:active {
+  transform: translateY(0);
+}
+
+/* CARDS */
+.product-card:hover,
+.seller-card:hover,
+.discount-card:hover,
+.account-content-card:hover,
+.account-user-card:hover,
+.seller-info-card:hover,
+.product-detail-panel:hover,
+.reservation-card:hover {
+  transform: translateY(-4px);
+}
+
+/* INPUTS */
+input:focus,
+select:focus,
+textarea:focus {
+  outline: none;
+  border-color: rgba(31, 92, 179, 0.35);
+  box-shadow: 0 0 0 4px rgba(31, 92, 179, 0.08);
+}
+
+/* DROPDOWN */
+.user-menu-dropdown {
+  opacity: 0;
+  transform: translateY(8px);
+  pointer-events: none;
+}
+
+.user-menu.active .user-menu-dropdown {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+/* MODALES */
+.modal-overlay {
+  opacity: 0;
+  transition: opacity 0.28s ease;
+}
+
+.modal-overlay.active {
+  opacity: 1;
+}
+
+.custom-modal {
+  transform: scale(0.96) translateY(12px);
+}
+
+.modal-overlay.active .custom-modal {
+  transform: scale(1) translateY(0);
+}
+
+/* APARICIÓN AL CARGAR */
+.reveal {
+  opacity: 0;
+  transform: translateY(18px);
+  transition: opacity 0.55s ease, transform 0.55s ease;
+}
+
+.reveal.reveal-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* APARICIÓN ESCALONADA */
+.reveal-delay-1 { transition-delay: 0.05s; }
+.reveal-delay-2 { transition-delay: 0.10s; }
+.reveal-delay-3 { transition-delay: 0.15s; }
+.reveal-delay-4 { transition-delay: 0.20s; }
+.reveal-delay-5 { transition-delay: 0.25s; }
+.reveal-delay-6 { transition-delay: 0.30s; }

@@ -1,0 +1,148 @@
+/* Reset básico */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-primary);
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  line-height: 1.5;
+}
+
+/* Imágenes */
+img {
+  max-width: 100%;
+  display: block;
+}
+
+/* Enlaces */
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+/* Botones */
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  border: none;
+  outline: none;
+}
+
+button {
+  cursor: pointer;
+  background: none;
+}
+
+/* Listas */
+ul,
+ol {
+  list-style: none;
+}
+
+/* Contenedor general */
+.container {
+  width: 100%;
+  max-width: var(--container-width);
+  margin: 0 auto;
+  padding-left: var(--container-padding);
+  padding-right: var(--container-padding);
+}
+
+/* Wrapper general */
+.page-wrapper {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Main ocupa espacio restante */
+main {
+  flex: 1;
+}
+
+/* Botones reutilizables */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 22px;
+  border-radius: var(--radius-pill);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  transition: var(--transition-medium);
+}
+
+.btn-outline {
+  border: 2px solid var(--color-text);
+  background-color: transparent;
+  color: var(--color-text);
+}
+
+.btn-outline:hover {
+  background-color: var(--color-text);
+  color: var(--color-white);
+}
+
+.btn-text {
+  color: var(--color-text);
+  background-color: transparent;
+}
+
+.btn-text:hover {
+  color: var(--color-primary);
+}
+
+.btn-small {
+  padding: 9px 20px;
+  background: linear-gradient(135deg, #1f5cb3, #0f4c97);
+  color: var(--color-white);
+  font-size: 0.82rem;
+  font-weight: 600;
+  border-radius: var(--radius-pill);
+  min-width: 72px;
+  transition: var(--transition-medium);
+}
+
+.btn-small:hover {
+  background: linear-gradient(135deg, #18498f, #0a3870);
+  transform: translateY(-1px);
+}
+
+/* Títulos */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  line-height: 1.2;
+}
+
+/* Inputs y selects base */
+input,
+select {
+  width: 100%;
+  background-color: transparent;
+  border: none;
+  outline: none;
+}
+
+/* Utilidad visual temporal para enfoque */
+input:focus,
+select:focus,
+button:focus-visible,
+a:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}

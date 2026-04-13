@@ -1,0 +1,121 @@
+.reservations-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.reservation-card {
+  background-color: #faf8f3;
+  border: 1px solid rgba(0, 0, 0, 0.04);
+  border-radius: 22px;
+  padding: 18px;
+  display: grid;
+  grid-template-columns: 110px 1fr auto;
+  gap: 16px;
+  align-items: center;
+}
+
+.reservation-image {
+  width: 110px;
+  height: 110px;
+  border-radius: 18px;
+  object-fit: cover;
+  background-color: #f3eee6;
+}
+
+.reservation-content {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.reservation-category {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--color-primary);
+}
+
+.reservation-title {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.reservation-business,
+.reservation-note,
+.reservation-date {
+  font-size: 0.94rem;
+  color: var(--color-text-light);
+  line-height: 1.45;
+}
+
+.reservation-side {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: flex-end;
+}
+
+.reservation-price {
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: var(--color-text);
+}
+
+.reservation-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  background-color: #eef5ff;
+  color: var(--color-primary);
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.reservation-status .material-symbols-outlined {
+  font-size: 16px;
+}
+
+.reservations-empty {
+  display: none;
+  text-align: center;
+  padding: 34px 20px;
+  border-radius: 24px;
+  background-color: #faf8f3;
+  border: 1px solid rgba(0, 0, 0, 0.04);
+}
+
+.reservations-empty .material-symbols-outlined {
+  font-size: 48px;
+  color: var(--color-primary);
+  margin-bottom: 12px;
+}
+
+.reservations-empty h3 {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--color-accent);
+  margin-bottom: 8px;
+}
+
+.reservations-empty p {
+  color: var(--color-text-light);
+  margin-bottom: 18px;
+}
+
+@media (max-width: 768px) {
+  .reservation-card {
+    grid-template-columns: 1fr;
+  }
+
+  .reservation-image {
+    width: 100%;
+    height: 220px;
+  }
+
+  .reservation-side {
+    align-items: flex-start;
+  }
+}

@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dale Click | Detalle del producto</title>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap"
+    rel="stylesheet"
+  />
+
+  <!-- Google Icons -->
+  <link
+    rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0"
+  />
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="../assets/css/variables.css" />
+  <link rel="stylesheet" href="../assets/css/global.css" />
+  <link rel="stylesheet" href="../assets/css/layout.css" />
+  <link rel="stylesheet" href="../assets/css/home.css" />
+  <link rel="stylesheet" href="../assets/css/product-detail.css" />
+  <link rel="stylesheet" href="../assets/css/responsive.css" />
+  <link rel="stylesheet" href="../assets/css/animations.css" />
+</head>
+<body>
+  <div class="page-wrapper">
+    <!-- HEADER -->
+    <header class="main-header">
+      <div class="container header-container">
+        <a href="./index.html" class="logo-link">
+          <img
+            src="../assets/images/logo-dale-click.png"
+            alt="Logo de Dale Click"
+            class="logo"
+          />
+        </a>
+
+        <nav class="main-nav" aria-label="Navegación principal">
+          <ul class="nav-list">
+            <li><a href="./index.html" class="nav-link">Inicio</a></li>
+            <li><a href="./discounts.html" class="nav-link">Descuentos</a></li>
+            <li><a href="./sellers.html" class="nav-link">Emprendedores</a></li>
+          </ul>
+        </nav>
+
+        <div class="header-actions">
+          <a href="./login.html" class="btn btn-outline">Iniciar sesión</a>
+          <a href="./register.html" class="btn btn-text">Crear cuenta</a>
+        </div>
+      </div>
+    </header>
+
+    <!-- MAIN -->
+    <main>
+      <!-- DETALLE DEL PRODUCTO -->
+      <section class="product-detail-section">
+        <div class="container">
+          <div class="product-detail-card reveal reveal-delay-1" id="product-detail-card">
+            <div class="product-detail-loading">
+              Cargando producto...
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- PRODUCTOS RELACIONADOS -->
+      <section class="related-products-section">
+        <div class="container">
+          <div class="product-section-header reveal reveal-delay-2">
+            <div>
+              <h2>Productos relacionados</h2>
+              <p>
+                Explora otras opciones similares dentro del mismo emprendimiento
+                o categoría.
+              </p>
+            </div>
+          </div>
+
+          <div class="products-grid reveal reveal-delay-3" id="related-products-grid"></div>
+
+          <p class="no-results" id="related-products-no-results">
+            No hay productos relacionados disponibles por el momento.
+          </p>
+        </div>
+      </section>
+    </main>
+
+    <!-- MODAL REQUIERE CUENTA -->
+    <div class="modal-overlay" id="auth-required-modal" aria-hidden="true">
+      <div class="custom-modal">
+        <button type="button" class="modal-close-btn" id="close-auth-modal" aria-label="Cerrar">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+
+        <div class="modal-icon">
+          <span class="material-symbols-outlined">person_lock</span>
+        </div>
+
+        <h3>Necesitas una cuenta para reservar</h3>
+        <p>
+          Para reservar o pedir este producto debes iniciar sesión o crear una
+          cuenta en Dale Click.
+        </p>
+
+        <div class="modal-actions vertical">
+          <a href="./login.html" class="btn btn-small modal-full-btn">Iniciar sesión</a>
+          <a href="./register.html" class="btn product-detail-secondary-btn modal-full-btn">Crear cuenta</a>
+          <button type="button" class="btn btn-text modal-text-btn" id="cancel-auth-modal">
+            Cancelar
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL RESERVA -->
+    <div class="modal-overlay" id="reserve-modal" aria-hidden="true">
+      <div class="custom-modal reserve-modal">
+        <button type="button" class="modal-close-btn" id="close-reserve-modal" aria-label="Cerrar">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+
+        <h3>Reservar producto</h3>
+        <p class="reserve-modal-subtitle">
+          Confirma los datos de tu reserva antes de enviarla al emprendimiento.
+        </p>
+
+        <form id="reserve-form" class="reserve-form">
+          <div class="reserve-summary-card">
+            <p><strong>Producto:</strong> <span id="reserve-product-name">-</span></p>
+            <p><strong>Precio:</strong> <span id="reserve-product-price">-</span></p>
+            <p><strong>Negocio:</strong> <span id="reserve-business-name">-</span></p>
+          </div>
+
+          <div class="reserve-form-group">
+            <label for="reserve-quantity">Cantidad</label>
+            <input
+              type="number"
+              id="reserve-quantity"
+              name="quantity"
+              min="1"
+              value="1"
+              required
+            />
+          </div>
+
+          <div class="reserve-form-group">
+            <label for="reserve-note">Nota para el emprendedor (opcional)</label>
+            <textarea
+              id="reserve-note"
+              name="note"
+              rows="4"
+              maxlength="300"
+              placeholder="Ejemplo: me interesa reservarlo para recogerlo mañana."
+            ></textarea>
+          </div>
+
+          <div class="reserve-security-note">
+            <span class="material-symbols-outlined">verified_user</span>
+            <p>
+              Por seguridad, tu reserva solo podrá enviarse si tu sesión es válida.
+              La validación final se hará en el servidor.
+            </p>
+          </div>
+
+          <div class="modal-actions">
+            <button type="submit" class="btn btn-small product-detail-primary-btn">
+              Confirmar reserva
+            </button>
+            <button type="button" class="btn product-detail-secondary-btn" id="cancel-reserve-modal">
+              Cancelar
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- MODAL ÉXITO -->
+    <div class="modal-overlay" id="reserve-success-modal" aria-hidden="true">
+      <div class="custom-modal success-modal">
+        <button type="button" class="modal-close-btn" id="close-success-modal" aria-label="Cerrar">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+
+        <div class="modal-icon success">
+          <span class="material-symbols-outlined">check_circle</span>
+        </div>
+
+        <h3>Reserva enviada</h3>
+        <p>
+          Tu solicitud de reserva fue registrada correctamente. El emprendimiento
+          podrá verla en su panel.
+        </p>
+
+        <div class="modal-actions vertical">
+          <a href="./index.html" class="btn btn-small modal-full-btn">Volver al inicio</a>
+          <button type="button" class="btn product-detail-secondary-btn modal-full-btn" id="close-success-button">
+            Seguir viendo
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- FOOTER -->
+    <footer class="main-footer">
+      <div class="container footer-container">
+        <h2 class="footer-title">
+          Vuélvete un emprendedor con nosotros.
+          <span>Más información</span>
+        </h2>
+
+        <div class="footer-links">
+          <a href="#">Sobre nosotros</a>
+          <a href="#">Contacto</a>
+          <a href="#">Ayuda</a>
+        </div>
+
+        <div class="footer-social">
+          <a href="#" aria-label="Facebook">
+            <span class="material-symbols-outlined">public</span>
+          </a>
+          <a href="#" aria-label="Instagram">
+            <span class="material-symbols-outlined">photo_camera</span>
+          </a>
+          <a href="#" aria-label="Otra red social">
+            <span class="material-symbols-outlined">language</span>
+          </a>
+        </div>
+      </div>
+    </footer>
+  </div>
+
+  <script src="../assets/js/main.js"></script>
+<script src="../assets/js/shared-data.js"></script>
+<script src="../assets/js/animations.js"></script>
+<script src="../assets/js/product-detail.js"></script>
+</body>
+</html>

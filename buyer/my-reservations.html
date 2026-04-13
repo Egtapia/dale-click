@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dale Click | Mis reservas</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap"
+    rel="stylesheet"
+  />
+  <link
+    rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0"
+  />
+
+  <link rel="stylesheet" href="../assets/css/variables.css" />
+  <link rel="stylesheet" href="../assets/css/global.css" />
+  <link rel="stylesheet" href="../assets/css/layout.css" />
+  <link rel="stylesheet" href="../assets/css/account.css" />
+  <link rel="stylesheet" href="../assets/css/reservations.css" />
+  <link rel="stylesheet" href="../assets/css/responsive.css" />
+  <link rel="stylesheet" href="../assets/css/animations.css" />
+</head>
+<body>
+  <div class="page-wrapper">
+    <header class="main-header">
+      <div class="container header-container">
+        <a href="./index.html" class="logo-link">
+          <img src="../assets/images/logo-dale-click.png" alt="Logo de Dale Click" class="logo" />
+        </a>
+
+        <nav class="main-nav" aria-label="Navegación principal">
+          <ul class="nav-list">
+            <li><a href="./index.html" class="nav-link">Inicio</a></li>
+            <li><a href="./discounts.html" class="nav-link">Descuentos</a></li>
+            <li><a href="./sellers.html" class="nav-link">Emprendedores</a></li>
+          </ul>
+        </nav>
+
+        <div class="header-actions"></div>
+      </div>
+    </header>
+
+    <main>
+      <section class="account-section">
+        <div class="container">
+          <div class="account-layout">
+            <aside class="account-sidebar">
+              <div class="account-user-card reveal reveal-delay-1">
+                <div class="account-avatar" id="account-avatar">U</div>
+                <h2 id="account-fullname">Usuario</h2>
+                <p id="account-email">correo@email.com</p>
+              </div>
+
+              <nav class="account-nav reveal reveal-delay-2">
+                <a href="./my-account.html" class="account-nav-link">
+                  <span class="material-symbols-outlined">person</span>
+                  Mi cuenta
+                </a>
+                <a href="./my-reservations.html" class="account-nav-link active">
+                  <span class="material-symbols-outlined">inventory_2</span>
+                  Mis reservas
+                </a>
+              </nav>
+            </aside>
+
+            <section class="account-content">
+              <div class="account-content-card reveal reveal-delay-3">
+                <div class="account-content-header">
+                  <h1>Mis reservas</h1>
+                  <p id="reservations-count-text">Aquí verás los productos que has reservado.</p>
+                </div>
+
+                <div class="reservations-list" id="reservations-list"></div>
+
+                <div class="reservations-empty" id="reservations-empty">
+                  <span class="material-symbols-outlined">inventory_2</span>
+                  <h3>Aún no tienes reservas</h3>
+                  <p>Cuando reserves un producto en Dale Click, aparecerá aquí.</p>
+                  <a href="./index.html" class="btn btn-small">Explorar productos</a>
+                </div>
+              </div>
+            </section>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="../assets/js/main.js"></script>
+  <script src="../assets/js/account.js"></script>
+  <script src="../assets/js/animations.js"></script>
+  <script src="../assets/js/reservations.js"></script>
+</body>
+</html>

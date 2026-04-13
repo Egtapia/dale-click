@@ -1,0 +1,46 @@
+:root {
+  /* Tipografía */
+  --font-primary: "Poppins", sans-serif;
+
+  /* Colores principales */
+  --color-bg: #f7f3eb;
+  --color-white: #ffffff;
+  --color-text: #1d1d1f;
+  --color-text-light: #5f5f68;
+
+  --color-primary: #0f4c97;
+  --color-primary-dark: #0a3870;
+  --color-secondary: #f3cf7a;
+  --color-accent: #1d2d8f;
+
+  --color-border: #e7e1d8;
+  --color-card: #fffaf2;
+
+  /* Sombras */
+  --shadow-soft: 0 8px 20px rgba(0, 0, 0, 0.08);
+  --shadow-card: 0 6px 14px rgba(0, 0, 0, 0.10);
+
+  /* Bordes */
+  --radius-sm: 10px;
+  --radius-md: 16px;
+  --radius-lg: 24px;
+  --radius-xl: 30px;
+  --radius-pill: 999px;
+
+  /* Contenedor */
+  --container-width: 1320px;
+  --container-padding: 20px;
+
+  /* Transiciones */
+  --transition-fast: 0.2s ease;
+  --transition-medium: 0.3s ease;
+
+  /* Tamaños de texto */
+  --text-xs: 0.75rem;
+  --text-sm: 0.9rem;
+  --text-md: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.5rem;
+  --text-2xl: 2.2rem;
+  --text-3xl: 3rem;
+}
