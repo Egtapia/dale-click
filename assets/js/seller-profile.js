@@ -204,7 +204,7 @@ const mockProducts = window.DALECLICK_DATA?.products || [];
 
   function buildProductCard(product) {
     return `
-      <article class="product-card reveal reveal-delay-2">
+      <article class="product-card">
         <img
           src="${escapeHtml(product.imageURL || "../assets/images/producto-default.jpg")}"
           alt="${escapeHtml(product.productName)}"

@@ -13,9 +13,9 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function clearSession() {
-  localStorage.removeItem("daleclick_session");
-  localStorage.removeItem("daleclick_token");
-}
+    localStorage.removeItem("daleclick_session");
+    localStorage.removeItem("daleclick_token");
+  }
 
   function escapeHtml(text) {
     return String(text ?? "")
@@ -24,77 +24,6 @@ document.addEventListener("DOMContentLoaded", () => {
       .replace(/>/g, "&gt;")
       .replace(/"/g, "&quot;")
       .replace(/'/g, "&#039;");
-  }
-
-  function renderGuestHeader() {
-    if (!headerActions) return;
-
-    headerActions.innerHTML = `
-      <a href="./login.html" class="btn btn-outline">Iniciar sesión</a>
-      <a href="./register.html" class="btn btn-text">Crear cuenta</a>
-    `;
-  }
-
-  function renderUserHeader(session) {
-    if (!headerActions) return;
-
-    const firstName = sanitizeClientText(document.getElementById("first-name")?.value);
-
-    headerActions.innerHTML = `
-      <div class="user-menu" id="user-menu">
-        <button type="button" class="user-menu-trigger" id="user-menu-trigger">
-          <span class="user-avatar">${firstName.charAt(0).toUpperCase()}</span>
-          <span class="user-menu-text">Hola, ${firstName}</span>
-          <span class="material-symbols-outlined">expand_more</span>
-        </button>
-
-        <div class="user-menu-dropdown" id="user-menu-dropdown">
-          <a href="./my-account.html" class="user-menu-link">
-            <span class="material-symbols-outlined">person</span>
-            Mi cuenta
-          </a>
-
-          <a href="./my-reservations.html" class="user-menu-link">
-            <span class="material-symbols-outlined">inventory_2</span>
-            Mis reservas
-          </a>
-
-          <button type="button" class="user-menu-link logout-btn" id="logout-button">
-            <span class="material-symbols-outlined">logout</span>
-            Cerrar sesión
-          </button>
-        </div>
-      </div>
-    `;
-
-    bindUserMenu();
-  }
-
-  function bindUserMenu() {
-    const userMenu = document.getElementById("user-menu");
-    const trigger = document.getElementById("user-menu-trigger");
-    const dropdown = document.getElementById("user-menu-dropdown");
-    const logoutButton = document.getElementById("logout-button");
-
-    if (!userMenu || !trigger || !dropdown) return;
-
-    trigger.addEventListener("click", (event) => {
-      event.stopPropagation();
-      userMenu.classList.toggle("active");
-    });
-
-    document.addEventListener("click", (event) => {
-      if (!userMenu.contains(event.target)) {
-        userMenu.classList.remove("active");
-      }
-    });
-
-    if (logoutButton) {
-      logoutButton.addEventListener("click", () => {
-        clearSession();
-        window.location.href = "./index.html";
-      });
-    }
   }
 
   function injectUserMenuStyles() {
@@ -116,6 +45,7 @@ document.addEventListener("DOMContentLoaded", () => {
         background-color: #ffffff;
         border: 1px solid rgba(0, 0, 0, 0.08);
         box-shadow: 0 6px 14px rgba(0, 0, 0, 0.05);
+        cursor: pointer;
       }
 
       .user-avatar {
@@ -170,6 +100,9 @@ document.addEventListener("DOMContentLoaded", () => {
         color: #1d1d1f;
         font-size: 0.95rem;
         text-align: left;
+        text-decoration: none;
+        border: none;
+        cursor: pointer;
       }
 
       .user-menu-link:hover {
@@ -179,11 +112,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
       .user-menu-link .material-symbols-outlined {
         font-size: 20px;
-      }
-
-      .logout-btn {
-        border: none;
-        cursor: pointer;
       }
 
       @media (max-width: 768px) {
@@ -200,11 +128,87 @@ document.addEventListener("DOMContentLoaded", () => {
     document.head.appendChild(style);
   }
 
+  function renderGuestHeader() {
+    if (!headerActions) return;
+
+    headerActions.innerHTML = `
+      <a href="./login.html" class="btn btn-outline">Iniciar sesión</a>
+      <a href="./register.html" class="btn btn-text">Crear cuenta</a>
+    `;
+  }
+
+  function bindUserMenu() {
+    const userMenu = document.getElementById("user-menu");
+    const trigger = document.getElementById("user-menu-trigger");
+    const logoutButton = document.getElementById("logout-button");
+
+    if (!userMenu || !trigger) return;
+
+    trigger.addEventListener("click", (event) => {
+      event.stopPropagation();
+      userMenu.classList.toggle("active");
+    });
+
+    document.addEventListener("click", (event) => {
+      if (!userMenu.contains(event.target)) {
+        userMenu.classList.remove("active");
+      }
+    });
+
+    if (logoutButton) {
+      logoutButton.addEventListener("click", () => {
+        clearSession();
+        window.location.href = "./index.html";
+      });
+    }
+  }
+
+  function renderUserHeader(session) {
+    if (!headerActions) return;
+
+    const firstName = escapeHtml(session.firstName || "Usuario");
+    const initial = firstName.charAt(0).toUpperCase();
+
+    headerActions.innerHTML = `
+      <div class="user-menu" id="user-menu">
+        <button type="button" class="user-menu-trigger" id="user-menu-trigger">
+          <span class="user-avatar">${initial}</span>
+          <span class="user-menu-text">Hola, ${firstName}</span>
+          <span class="material-symbols-outlined">expand_more</span>
+        </button>
+
+        <div class="user-menu-dropdown" id="user-menu-dropdown">
+          <a href="./my-account.html" class="user-menu-link">
+            <span class="material-symbols-outlined">person</span>
+            Mi cuenta
+          </a>
+
+          <a href="./my-reservations.html" class="user-menu-link">
+            <span class="material-symbols-outlined">inventory_2</span>
+            Mis reservas
+          </a>
+
+          <button type="button" class="user-menu-link" id="logout-button">
+            <span class="material-symbols-outlined">logout</span>
+            Cerrar sesión
+          </button>
+        </div>
+      </div>
+    `;
+
+    bindUserMenu();
+  }
+
   injectUserMenuStyles();
+
+  if (!headerActions) {
+    console.warn("No se encontró .header-actions en esta página.");
+    return;
+  }
 
   const session = getSession();
 
-  if (session) {
+  if (session && session.firstName) {
     renderUserHeader(session);
   } else {
     renderGuestHeader();

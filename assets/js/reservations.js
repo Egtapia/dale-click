@@ -87,7 +87,7 @@ document.addEventListener("DOMContentLoaded", () => {
       reservationsList.innerHTML = reservations
         .map((reservation) => {
           return `
-            <article class="reservation-card reveal reveal-delay-2">
+            <article class="reservation-card">
               <img
                 src="${reservation.imageURL || "../assets/images/producto-default.jpg"}"
                 alt="${reservation.productName}"

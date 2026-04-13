@@ -147,7 +147,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const detailUrl = `./product-detail.html?id=${encodeURIComponent(discount.productID)}`;
 
     return `
-      <article class="discount-card reveal reveal-delay-2">
+      <article class="discount-card">
         <div class="discount-image-wrapper">
           <img
             src="${escapeHtml(discount.imageURL)}"

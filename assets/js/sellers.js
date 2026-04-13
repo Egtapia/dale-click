@@ -164,7 +164,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const detailUrl = `./seller-profile.html?id=${encodeURIComponent(businessID)}`;
 
     return `
-      <article class="seller-card reveal reveal-delay-2">
+      <article class="seller-card">
         <div class="seller-cover">
           <img
             src="${logoURL}"
