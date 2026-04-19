@@ -11,6 +11,7 @@ document.addEventListener("DOMContentLoaded", () => {
       .toLowerCase()
       .normalize("NFD")
       .replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^\w\s-]/g, "")
       .trim();
   }
 
@@ -18,19 +19,56 @@ document.addEventListener("DOMContentLoaded", () => {
     return document.querySelectorAll(".product-card");
   }
 
-  function getCategoryAliases(category) {
-    const normalizedCategory = normalizeText(category);
+  function resolveCategoryValue(rawCategoryValue) {
+    if (!categoryFilter) return rawCategoryValue;
 
-    const aliasesMap = {
-      belleza: ["belleza", "cosmeticos", "cosmetico", "cuidado personal", "maquillaje"],
-      hogar: ["hogar", "decoracion", "decoracion y hogar", "articulos utiles", "casa"],
-      alimentos: ["alimentos", "comida", "bebidas", "snacks", "salud y bienestar"],
-      tecnologia: ["tecnologia", "tecnologia y accesorios", "accesorios", "dispositivos"],
-      ropa: ["ropa", "moda", "vestimenta", "checkroom"],
+    const normalizedRawValue = normalizeText(rawCategoryValue);
+    const options = Array.from(categoryFilter.options || []);
+
+    const exactValueMatch = options.find(
+      (option) => normalizeText(option.value) === normalizedRawValue
+    );
+
+    if (exactValueMatch) {
+      return exactValueMatch.value;
+    }
+
+    const directMatch = options.find((option) => {
+      const optionValue = normalizeText(option.value);
+      const optionLabel = normalizeText(option.textContent);
+
+      return (
+        optionValue.includes(normalizedRawValue) ||
+        normalizedRawValue.includes(optionValue) ||
+        optionLabel.includes(normalizedRawValue) ||
+        normalizedRawValue.includes(optionLabel)
+      );
+    });
+
+    if (directMatch) {
+      return directMatch.value;
+    }
+
+    const featuredAliases = {
+      tecnologia: ["tecnologia", "electronica", "dispositivos", "accesorios"],
+      ropa: ["ropa", "moda", "vestimenta"],
+      belleza: ["belleza", "cosmeticos", "cosmetico", "maquillaje", "cuidado personal"],
+      hogar: ["hogar", "muebles", "decoracion", "casa"],
+      alimentos: ["alimentos", "restaurantes", "comida", "bebidas", "snacks"],
       servicios: ["servicios", "educacion", "tutoria", "asesoria", "soporte"]
     };
 
-    return aliasesMap[normalizedCategory] || [normalizedCategory];
+    const aliases = featuredAliases[normalizedRawValue] || [normalizedRawValue];
+    const aliasMatch = options.find((option) => {
+      const optionValue = normalizeText(option.value);
+      const optionLabel = normalizeText(option.textContent);
+
+      return aliases.some(
+        (alias) => optionValue.includes(alias) || optionLabel.includes(alias)
+      );
+    });
+
+    return aliasMatch ? aliasMatch.value : rawCategoryValue;
   }
 
   function showNoResults(show) {
@@ -62,10 +100,9 @@ document.addEventListener("DOMContentLoaded", () => {
         productCategory.includes(searchTerm) ||
         businessName.includes(searchTerm);
 
-      const categoryAliases = getCategoryAliases(selectedCategory);
       const matchesCategory =
         selectedCategory === "todas" ||
-        categoryAliases.some((alias) => productCategory.includes(alias));
+        productCategory === selectedCategory;
 
       if (matchesSearch && matchesCategory) {
         card.style.display = "block";
@@ -81,7 +118,7 @@ document.addEventListener("DOMContentLoaded", () => {
   function setCategoryAndFilter(categoryValue) {
     if (!categoryFilter) return;
 
-    categoryFilter.value = categoryValue;
+    categoryFilter.value = resolveCategoryValue(categoryValue);
     filterProducts();
 
     const productsSection = document.querySelector(".products-section");
@@ -140,11 +177,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
   bindEvents();
 
-  /*
-    products.js dispara este evento cuando termina de renderizar
-    las cards dinámicamente.
-  */
   window.addEventListener("productsRendered", () => {
+    filterProducts();
+  });
+
+  window.addEventListener("categoriesLoaded", () => {
     filterProducts();
   });
 

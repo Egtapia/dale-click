@@ -1,9 +1,41 @@
 import pool from "../config/db.js";
 
+function normalizeCategoryValue(categoryName) {
+  return String(categoryName ?? "")
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^\w\s-]/g, "")
+    .trim()
+    .replace(/\s+/g, "-");
+}
+
+function mapCategory(category) {
+  const categoryName = category.categoryName || "Sin categoria";
+
+  return {
+    categoryID: category.categoryID,
+    categoryName,
+    categoryValue: normalizeCategoryValue(categoryName),
+    productsCount: Number(category.productsCount || 0)
+  };
+}
+
+function mapProduct(product) {
+  const categoryName = product.categoryName || "Sin categoria";
+
+  return {
+    ...product,
+    categoryName,
+    categoryValue: normalizeCategoryValue(categoryName),
+    imageURL: product.imageURL || "../assets/images/producto-default.jpg"
+  };
+}
+
 export async function getAllProducts(req, res) {
   try {
     const [rows] = await pool.query(`
-      SELECT 
+      SELECT
         p.productID,
         p.productName,
         p.description,
@@ -16,6 +48,7 @@ export async function getAllProducts(req, res) {
         b.contactEmail,
         b.city,
         b.department,
+        c.categoryID,
         c.categoryName,
         (
           SELECT pi.imageURL
@@ -25,14 +58,14 @@ export async function getAllProducts(req, res) {
           LIMIT 1
         ) AS imageURL
       FROM Products p
-      JOIN BusinessProfiles b ON p.businessID = b.businessID
-      JOIN Categories c ON p.categoryID = c.categoryID
+      INNER JOIN BusinessProfiles b ON p.businessID = b.businessID
+      INNER JOIN Categories c ON p.categoryID = c.categoryID
       ORDER BY p.createdAt DESC, p.productID DESC
     `);
 
     return res.json({
       ok: true,
-      products: rows
+      products: rows.map(mapProduct)
     });
   } catch (error) {
     console.error("Error getAllProducts:", error);
@@ -43,13 +76,39 @@ export async function getAllProducts(req, res) {
   }
 }
 
+export async function getAllCategories(req, res) {
+  try {
+    const [rows] = await pool.query(`
+      SELECT
+        c.categoryID,
+        c.categoryName,
+        COUNT(p.productID) AS productsCount
+      FROM Categories c
+      LEFT JOIN Products p ON p.categoryID = c.categoryID
+      GROUP BY c.categoryID, c.categoryName
+      ORDER BY c.categoryName ASC
+    `);
+
+    return res.json({
+      ok: true,
+      categories: rows.map(mapCategory)
+    });
+  } catch (error) {
+    console.error("Error getAllCategories:", error);
+    return res.status(500).json({
+      ok: false,
+      message: "Error al obtener categorias"
+    });
+  }
+}
+
 export async function getProductById(req, res) {
   try {
     const { id } = req.params;
 
     const [rows] = await pool.query(
       `
-      SELECT 
+      SELECT
         p.productID,
         p.productName,
         p.description,
@@ -62,10 +121,11 @@ export async function getProductById(req, res) {
         b.contactEmail,
         b.city,
         b.department,
+        c.categoryID,
         c.categoryName
       FROM Products p
-      JOIN BusinessProfiles b ON p.businessID = b.businessID
-      JOIN Categories c ON p.categoryID = c.categoryID
+      INNER JOIN BusinessProfiles b ON p.businessID = b.businessID
+      INNER JOIN Categories c ON p.categoryID = c.categoryID
       WHERE p.productID = ?
       LIMIT 1
       `,
@@ -78,8 +138,6 @@ export async function getProductById(req, res) {
         message: "Producto no encontrado"
       });
     }
-
-    const product = rows[0];
 
     const [images] = await pool.query(
       `
@@ -94,7 +152,7 @@ export async function getProductById(req, res) {
     return res.json({
       ok: true,
       product: {
-        ...product,
+        ...mapProduct(rows[0]),
         images
       }
     });

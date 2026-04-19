@@ -9,6 +9,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   if (!productsGrid) return;
 
   const API_URL = "http://localhost:3001/api/products";
+  const CATEGORIES_API_URL = "http://localhost:3001/api/products/categories";
   let allProducts = [];
 
   function escapeHtml(text) {
@@ -25,6 +26,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       .toLowerCase()
       .normalize("NFD")
       .replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^\w\s-]/g, "")
       .trim();
   }
 
@@ -56,9 +58,82 @@ document.addEventListener("DOMContentLoaded", async () => {
     return normalizeCategoryValue(getCategoryLabel(product));
   }
 
+  function populateCategoryFilter(categories) {
+    if (!categoryFilter) return;
+
+    const uniqueCategories = categories
+      .filter((category) => category && category.categoryName)
+      .filter(
+        (category, index, list) =>
+          list.findIndex((item) => item.categoryValue === category.categoryValue) === index
+      );
+
+    categoryFilter.innerHTML = `
+      <option value="todas">Todas las categorías</option>
+      ${uniqueCategories
+        .map(
+          (category) =>
+            `<option value="${escapeHtml(category.categoryValue)}">${escapeHtml(category.categoryName)}</option>`
+        )
+        .join("")}
+    `;
+  }
+
   function getUrlCategory() {
     const params = new URLSearchParams(window.location.search);
     return params.get("category") || "todas";
+  }
+
+  function resolveCategoryValue(rawCategoryValue) {
+    if (!categoryFilter) return rawCategoryValue;
+
+    const normalizedRawValue = normalizeText(rawCategoryValue);
+    const options = Array.from(categoryFilter.options || []);
+
+    const exactValueMatch = options.find(
+      (option) => normalizeText(option.value) === normalizedRawValue
+    );
+
+    if (exactValueMatch) {
+      return exactValueMatch.value;
+    }
+
+    const directMatch = options.find((option) => {
+      const optionValue = normalizeText(option.value);
+      const optionLabel = normalizeText(option.textContent);
+
+      return (
+        optionValue.includes(normalizedRawValue) ||
+        normalizedRawValue.includes(optionValue) ||
+        optionLabel.includes(normalizedRawValue) ||
+        normalizedRawValue.includes(optionLabel)
+      );
+    });
+
+    if (directMatch) {
+      return directMatch.value;
+    }
+
+    const featuredAliases = {
+      tecnologia: ["tecnologia", "electronica", "dispositivos", "accesorios"],
+      ropa: ["ropa", "moda", "vestimenta"],
+      belleza: ["belleza", "cosmeticos", "cosmetico", "maquillaje", "cuidado personal"],
+      hogar: ["hogar", "muebles", "decoracion", "casa"],
+      alimentos: ["alimentos", "restaurantes", "comida", "bebidas", "snacks"],
+      servicios: ["servicios", "educacion", "tutoria", "asesoria", "soporte"]
+    };
+
+    const aliases = featuredAliases[normalizedRawValue] || [normalizedRawValue];
+    const aliasMatch = options.find((option) => {
+      const optionValue = normalizeText(option.value);
+      const optionLabel = normalizeText(option.textContent);
+
+      return aliases.some(
+        (alias) => optionValue.includes(alias) || optionLabel.includes(alias)
+      );
+    });
+
+    return aliasMatch ? aliasMatch.value : rawCategoryValue;
   }
 
   function updateUrlCategory(category) {
@@ -179,15 +254,36 @@ document.addEventListener("DOMContentLoaded", async () => {
     return [];
   }
 
+  async function fetchCategoriesFromApi() {
+    const response = await fetch(CATEGORIES_API_URL);
+    if (!response.ok) {
+      throw new Error(`Error al obtener categorias: ${response.status}`);
+    }
+
+    const data = await response.json();
+
+    if (Array.isArray(data)) return data;
+    if (Array.isArray(data.categories)) return data.categories;
+    if (Array.isArray(data.data)) return data.data;
+
+    return [];
+  }
+
   async function loadProducts() {
     try {
       renderLoadingState();
 
-      allProducts = await fetchProductsFromApi();
+      const [categories, products] = await Promise.all([
+        fetchCategoriesFromApi(),
+        fetchProductsFromApi()
+      ]);
+
+      populateCategoryFilter(categories);
+      allProducts = products;
 
       const urlCategory = getUrlCategory();
       if (categoryFilter && urlCategory) {
-        categoryFilter.value = urlCategory;
+        categoryFilter.value = resolveCategoryValue(urlCategory);
       }
 
       applyFilters();

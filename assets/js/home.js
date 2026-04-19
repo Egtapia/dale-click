@@ -1,19 +1,63 @@
-const API_URL = "http://localhost:3001/api/products";
+const PRODUCTS_API_URL = "http://localhost:3001/api/products";
+const CATEGORIES_API_URL = "http://localhost:3001/api/products/categories";
 
-async function loadProducts() {
-  try {
-    const response = await fetch(API_URL);
-    const data = await response.json();
+function escapeHtml(text) {
+  return String(text ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
 
-    if (!data.ok || !Array.isArray(data.products)) {
-      console.error("Respuesta inválida del backend:", data);
-      return;
-    }
+function normalizeText(text) {
+  return String(text ?? "")
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^\w\s-]/g, "")
+    .trim();
+}
 
-    renderProducts(data.products);
-  } catch (error) {
-    console.error("Error cargando productos:", error);
+function normalizeCategoryValue(categoryName) {
+  return normalizeText(categoryName).replace(/\s+/g, "-");
+}
+
+function formatPrice(price) {
+  const numericPrice = Number(price) || 0;
+  return `C$ ${numericPrice.toFixed(2)}`;
+}
+
+function getImageUrl(product) {
+  if (product.imageURL && String(product.imageURL).trim() !== "") {
+    return product.imageURL;
   }
+
+  return "../assets/images/producto-default.jpg";
+}
+
+function populateCategoryFilter(categories) {
+  const categoryFilter = document.getElementById("category-filter");
+  if (!categoryFilter) return;
+
+  const uniqueCategories = categories
+    .filter((category) => category && category.categoryName)
+    .filter(
+      (category, index, list) =>
+        list.findIndex((item) => item.categoryValue === category.categoryValue) === index
+    );
+
+  categoryFilter.innerHTML = `
+    <option value="todas">Todas las categorías</option>
+    ${uniqueCategories
+      .map(
+        (category) =>
+          `<option value="${escapeHtml(category.categoryValue)}">${escapeHtml(category.categoryName)}</option>`
+      )
+      .join("")}
+  `;
+
+  window.dispatchEvent(new Event("categoriesLoaded"));
 }
 
 function renderProducts(products) {
@@ -24,8 +68,9 @@ function renderProducts(products) {
 
   container.innerHTML = "";
 
-  if (!products.length) {
+  if (!Array.isArray(products) || products.length === 0) {
     if (noResultsMessage) noResultsMessage.style.display = "block";
+    window.dispatchEvent(new Event("productsRendered"));
     return;
   }
 
@@ -35,27 +80,27 @@ function renderProducts(products) {
     const card = document.createElement("article");
     card.className = "product-card";
     card.dataset.name = String(product.productName || "");
-    card.dataset.category = String(product.categoryValue || product.categoryName || "");
+    card.dataset.category = String(product.categoryValue || normalizeCategoryValue(product.categoryName));
     card.dataset.business = String(product.businessName || "");
 
     card.innerHTML = `
       <div class="product-card-image-wrap">
         <img
           class="product-card-image"
-          src="${product.imageURL}"
-          alt="${product.productName}"
+          src="${escapeHtml(getImageUrl(product))}"
+          alt="${escapeHtml(product.productName || "Producto")}"
           loading="lazy"
           onerror="this.src='../assets/images/producto-default.jpg'"
         />
       </div>
 
       <div class="product-card-content">
-        <span class="product-card-category">${product.categoryName || "Categoría"}</span>
-        <h3 class="product-card-title">${product.productName}</h3>
-        <p class="product-card-price">C$ ${Number(product.price).toFixed(2)}</p>
-        <p class="product-card-business">${product.businessName || "Negocio local"}</p>
+        <span class="product-card-category">${escapeHtml(product.categoryName || "Categoría")}</span>
+        <h3 class="product-card-title">${escapeHtml(product.productName || "Producto sin nombre")}</h3>
+        <p class="product-card-price">${formatPrice(product.price)}</p>
+        <p class="product-card-business">${escapeHtml(product.businessName || "Negocio local")}</p>
 
-        <a class="product-card-button" href="./product-detail.html?id=${product.productID}">
+        <a class="product-card-button" href="./product-detail.html?id=${encodeURIComponent(product.productID || "")}">
           Ver
         </a>
       </div>
@@ -63,6 +108,45 @@ function renderProducts(products) {
 
     container.appendChild(card);
   });
+
+  window.dispatchEvent(new Event("productsRendered"));
 }
 
-document.addEventListener("DOMContentLoaded", loadProducts);
+async function fetchProducts() {
+  const response = await fetch(PRODUCTS_API_URL);
+  const data = await response.json();
+
+  if (!response.ok || !data.ok || !Array.isArray(data.products)) {
+    throw new Error("Respuesta invalida al obtener productos.");
+  }
+
+  return data.products;
+}
+
+async function fetchCategories() {
+  const response = await fetch(CATEGORIES_API_URL);
+  const data = await response.json();
+
+  if (!response.ok || !data.ok || !Array.isArray(data.categories)) {
+    throw new Error("Respuesta invalida al obtener categorias.");
+  }
+
+  return data.categories;
+}
+
+async function loadHomeData() {
+  try {
+    const [categories, products] = await Promise.all([
+      fetchCategories(),
+      fetchProducts()
+    ]);
+
+    populateCategoryFilter(categories);
+    renderProducts(products);
+  } catch (error) {
+    console.error("Error cargando datos del home:", error);
+    renderProducts([]);
+  }
+}
+
+document.addEventListener("DOMContentLoaded", loadHomeData);
