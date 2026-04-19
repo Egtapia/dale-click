@@ -1,144 +1,121 @@
-import pool from "../config/db.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-import {
-  cleanText,
-  cleanEmail,
-  cleanUsername,
-  cleanPhone,
-  isValidEmail,
-  isValidPhone,
-  isValidPassword
-} from "../utils/sanitize.js";
+import pool from "../config/db.js";
 
-export const register = async (req, res) => {
+function sanitizeServerText(value) {
+  return String(value || "").trim();
+}
+
+function sanitizeServerIdentifier(value) {
+  return sanitizeServerText(value).replace(/\s+/g, " ");
+}
+
+export async function register(req, res) {
   try {
-    const username = cleanUsername(req.body.username);
-    const firstName = cleanText(req.body.firstName, 50);
-    const lastName = cleanText(req.body.lastName, 50);
-    const email = cleanEmail(req.body.email);
-    const password = String(req.body.password ?? "");
-    const phone = cleanPhone(req.body.phone);
+    const firstName = sanitizeServerText(req.body.firstName);
+    const lastName = sanitizeServerText(req.body.lastName);
+    const username = sanitizeServerIdentifier(req.body.username);
+    const email = sanitizeServerIdentifier(req.body.email).toLowerCase();
+    const phone = sanitizeServerIdentifier(req.body.phone);
+    const nationalID = sanitizeServerIdentifier(req.body.nationalID).toUpperCase();
+    const password = sanitizeServerText(req.body.password);
 
-    if (!username || !firstName || !lastName || !email || !password || !phone) {
-      return res.status(400).json({
-        ok: false,
-        message: "Completa todos los campos obligatorios."
-      });
+    if (!firstName || !lastName || !username || !email || !phone || !nationalID || !password) {
+      return res.status(400).json({ ok: false, message: "Todos los campos son obligatorios." });
     }
 
-    if (!isValidEmail(email)) {
-      return res.status(400).json({
-        ok: false,
-        message: "Correo electrónico inválido."
-      });
-    }
-
-    if (!isValidPhone(phone)) {
-      return res.status(400).json({
-        ok: false,
-        message: "Número de teléfono inválido."
-      });
-    }
-
-    if (!isValidPassword(password)) {
-      return res.status(400).json({
-        ok: false,
-        message: "La contraseña debe tener entre 6 y 100 caracteres."
-      });
+    if (password.length < 8) {
+      return res.status(400).json({ ok: false, message: "La contraseña debe tener al menos 8 caracteres." });
     }
 
     const [existingUsers] = await pool.query(
-      `
-      SELECT userID
-      FROM Users
-      WHERE username = ? OR email = ?
-      LIMIT 1
-      `,
-      [username, email]
+      `SELECT userID FROM Users WHERE email = ? OR username = ? OR nationalID = ? LIMIT 1`,
+      [email, username, nationalID]
     );
 
     if (existingUsers.length > 0) {
       return res.status(409).json({
         ok: false,
-        message: "Ya existe una cuenta con ese usuario o correo."
+        message: "Ya existe un usuario con ese correo, username o cédula."
       });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const query = `
-      INSERT INTO Users (username, firstName, lastName, email, password, phone, status)
-      VALUES (?, ?, ?, ?, ?, ?, 'activo')
-    `;
+    const [result] = await pool.query(
+      `
+      INSERT INTO Users (
+        username,
+        firstName,
+        lastName,
+        email,
+        phone,
+        nationalID,
+        password,
+        status,
+        roleID
+      )
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `,
+      [username, firstName, lastName, email, phone, nationalID, hashedPassword, "Activo", 1]
+    );
 
-    await pool.query(query, [
-      username,
-      firstName,
-      lastName,
-      email,
-      hashedPassword,
-      phone
-    ]);
-
-    return res.json({
+    return res.status(201).json({
       ok: true,
-      message: "Usuario registrado correctamente"
+      message: "Usuario registrado correctamente.",
+      userID: result.insertId
     });
   } catch (error) {
+    console.error("Error en register:", error);
     return res.status(500).json({
       ok: false,
-      error: error.message
+      message: "Error interno al registrar usuario."
     });
   }
-};
+}
 
-export const login = async (req, res) => {
+export async function login(req, res) {
   try {
-    const identifierRaw = String(req.body.identifier ?? "").trim();
-    const password = String(req.body.password ?? "");
+    const identifier = sanitizeServerIdentifier(req.body.identifier);
+    const password = sanitizeServerText(req.body.password);
 
-    if (!identifierRaw || !password) {
+    if (!identifier || !password) {
       return res.status(400).json({
         ok: false,
-        message: "Correo o usuario y contraseña son obligatorios."
+        message: "Debes enviar identificador y contraseña."
       });
     }
 
-    const identifierEmail = cleanEmail(identifierRaw);
-    const identifierUsername = cleanUsername(identifierRaw);
-
-    const query = `
-      SELECT userID, username, firstName, lastName, email, phone, password, status, roleID
+    const [rows] = await pool.query(
+      `
+      SELECT userID, username, firstName, lastName, email, phone, nationalID, password, roleID
       FROM Users
       WHERE email = ? OR username = ?
       LIMIT 1
-    `;
-
-    const [rows] = await pool.query(query, [identifierEmail || identifierRaw, identifierUsername]);
+      `,
+      [identifier, identifier]
+    );
 
     if (rows.length === 0) {
       return res.status(401).json({
         ok: false,
-        message: "Credenciales incorrectas."
+        message: "Credenciales inválidas."
       });
     }
 
     const user = rows[0];
+    const isValidPassword = await bcrypt.compare(password, user.password);
 
-    const passwordMatch = await bcrypt.compare(password, user.password);
-
-    if (!passwordMatch) {
+    if (!isValidPassword) {
       return res.status(401).json({
         ok: false,
-        message: "Credenciales incorrectas."
+        message: "Credenciales inválidas."
       });
     }
 
     const token = jwt.sign(
       {
         userID: user.userID,
-        username: user.username,
         email: user.email,
         roleID: user.roleID
       },
@@ -148,7 +125,7 @@ export const login = async (req, res) => {
 
     return res.json({
       ok: true,
-      message: "Login exitoso 🔐",
+      message: "Login exitoso.",
       token,
       user: {
         userID: user.userID,
@@ -157,25 +134,26 @@ export const login = async (req, res) => {
         lastName: user.lastName,
         email: user.email,
         phone: user.phone,
-        status: user.status,
+        nationalID: user.nationalID,
         roleID: user.roleID
       }
     });
   } catch (error) {
+    console.error("Error en login:", error);
     return res.status(500).json({
       ok: false,
-      error: error.message
+      message: "Error interno al iniciar sesión."
     });
   }
-};
+}
 
-export const me = async (req, res) => {
+export async function me(req, res) {
   try {
     const userID = req.user.userID;
 
     const [rows] = await pool.query(
       `
-      SELECT userID, username, firstName, lastName, email, phone, status, roleID
+      SELECT userID, username, firstName, lastName, email, phone, nationalID, roleID
       FROM Users
       WHERE userID = ?
       LIMIT 1
@@ -190,16 +168,15 @@ export const me = async (req, res) => {
       });
     }
 
-    const user = rows[0];
-
     return res.json({
       ok: true,
-      user
+      user: rows[0]
     });
   } catch (error) {
+    console.error("Error en me:", error);
     return res.status(500).json({
       ok: false,
-      error: error.message
+      message: "Error interno al obtener usuario."
     });
   }
-};
+}

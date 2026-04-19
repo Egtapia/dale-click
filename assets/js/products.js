@@ -230,25 +230,38 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   async function loadProducts() {
-    try {
-      renderLoadingState();
+  try {
+    renderLoadingState();
 
-      let products = [];
+    let products = [];
 
-      if (USE_API) {
-        products = await fetchProductsFromApi();
-      } else {
-        products = mockProducts;
-      }
-
-      renderProducts(products);
-    } catch (error) {
-      console.error("Error cargando productos:", error);
-      renderErrorState();
-      window.dispatchEvent(new CustomEvent("productsRendered"));
+    if (USE_API) {
+      products = await fetchProductsFromApi();
+    } else {
+      products = mockProducts;
     }
-  }
 
+    // 🔥 NUEVO: leer categoría desde URL
+    const params = new URLSearchParams(window.location.search);
+    const selectedCategory = params.get("category");
+
+    if (selectedCategory && selectedCategory !== "todas") {
+      products = products.filter(
+        (p) => getCategoryValue(p) === selectedCategory
+      );
+    }
+
+    renderProducts(products);
+  } catch (error) {
+    console.error("Error cargando productos:", error);
+    renderErrorState();
+    window.dispatchEvent(new CustomEvent("productsRendered"));
+  }
+}
+const categoryFilter = document.getElementById("products-category-filter");
+if (categoryFilter && selectedCategory) {
+  categoryFilter.value = selectedCategory;
+}
   window.DaleClickProducts = {
     loadProducts,
     renderProducts

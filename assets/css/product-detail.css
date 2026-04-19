@@ -475,3 +475,24 @@
     border-radius: 22px;
   }
 }
+
+.wallet-panel {
+  border: 1px solid rgba(15, 76, 151, 0.08);
+  background: linear-gradient(180deg, #ffffff 0%, #f7fbff 100%);
+}
+
+.wallet-panel.success {
+  border-color: rgba(19, 115, 51, 0.18);
+  background: linear-gradient(180deg, #ffffff 0%, #f3fcf6 100%);
+}
+
+.wallet-panel.warning {
+  border-color: rgba(180, 102, 24, 0.18);
+  background: linear-gradient(180deg, #ffffff 0%, #fff8ef 100%);
+}
+
+.wallet-panel-text {
+  color: var(--color-text-light);
+  line-height: 1.6;
+  font-size: 0.95rem;
+}

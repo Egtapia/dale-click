@@ -72,7 +72,6 @@
                   <h1>Mi cuenta</h1>
                   <p>Consulta la información principal de tu cuenta en Dale Click.</p>
                 </div>
-
                 <div class="account-info-grid">
                   <div class="account-info-item">
                     <span class="account-label">Nombre</span>
@@ -89,6 +88,10 @@
                     <span class="account-value" id="info-username">-</span>
                   </div>
 
+                  <div class="account-info-row">
+                    <span class="account-info-label">Cédula</span>
+                    <span class="account-info-value" id="info-national-id">-</span>
+                  </div>
                   <div class="account-info-item">
                     <span class="account-label">Correo electrónico</span>
                     <span class="account-value" id="info-email">-</span>
@@ -113,6 +116,58 @@
                   </p>
                 </div>
               </div>
+                <div class="account-wallet-box">
+  <div class="account-wallet-header">
+    <div>
+      <h2>Cartera inteligente</h2>
+      <p>
+        Activa esta opción para comparar tu presupuesto con el precio de los productos.
+      </p>
+    </div>
+  </div>
+
+  <div class="wallet-toggle-row">
+    <label class="wallet-switch">
+      <input type="checkbox" id="wallet-enabled" />
+      <span class="wallet-slider"></span>
+    </label>
+
+    <div class="wallet-toggle-text">
+      <strong>Activar cartera</strong>
+      <span>Permite analizar si te alcanza para comprar un producto.</span>
+    </div>
+  </div>
+
+  <div id="wallet-fields" class="wallet-fields">
+    <div class="wallet-input-group">
+      <label for="wallet-budget">Dinero disponible</label>
+      <input
+        type="number"
+        id="wallet-budget"
+        min="0"
+        step="0.01"
+        placeholder="Ejemplo: 1500"
+      />
+    </div>
+
+    <div class="wallet-actions">
+      <button type="button" class="wallet-btn primary" id="wallet-save-button">
+        Guardar presupuesto
+      </button>
+      <button type="button" class="wallet-btn secondary" id="wallet-clear-button">
+        Desactivar y limpiar
+      </button>
+    </div>
+  </div>
+
+  <p class="wallet-summary" id="wallet-summary">
+    Tu cartera está desactivada.
+  </p>
+  <p class="wallet-summary" id="wallet-reserved-info">Comprometido en reservas: C$ 0.00</p>
+<p class="wallet-summary" id="wallet-available-info">Disponible restante: C$ 0.00</p>
+  <p class="wallet-message" id="wallet-message"></p>
+</div>
+            
             </section>
           </div>
         </div>

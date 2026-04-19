@@ -5,11 +5,9 @@ document.addEventListener("DOMContentLoaded", () => {
   const productsCount = document.getElementById("seller-products-count");
   const noResultsMessage = document.getElementById("seller-products-no-results");
 
-  if (!profileCard || !categoriesTabs || !productsGrid) return;
+  if (!profileCard || !categoriesTabs || !productsGrid || !productsCount || !noResultsMessage) return;
 
-const mockBusinesses = window.DALECLICK_DATA?.businesses || [];
-const mockBusinessHours = window.DALECLICK_DATA?.businessHours || [];
-const mockProducts = window.DALECLICK_DATA?.products || [];
+  const API_BASE = "http://localhost:3001/api/businesses";
 
   let activeCategory = "todas";
   let currentBusiness = null;
@@ -31,18 +29,24 @@ const mockProducts = window.DALECLICK_DATA?.products || [];
 
   function formatPrice(price) {
     const numericPrice = Number(price) || 0;
-    return `${numericPrice.toLocaleString("es-NI")} C$`;
+    return `${numericPrice.toLocaleString("es-NI", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    })} C$`;
   }
 
   function getImageUrl(url) {
-    return url && url.trim() !== ""
+    return url && String(url).trim() !== ""
       ? url
       : "../assets/images/logo-seller-default.png";
   }
 
   function formatHourRange(hour) {
     if (hour.isClosed) return "Cerrado";
-    return `${hour.openTime} - ${hour.closeTime}`;
+
+    const open = String(hour.openTime || "").slice(0, 5);
+    const close = String(hour.closeTime || "").slice(0, 5);
+    return `${open} - ${close}`;
   }
 
   function getTypeBadge(business) {
@@ -64,9 +68,7 @@ const mockProducts = window.DALECLICK_DATA?.products || [];
   }
 
   function getUniversityBadge(business) {
-    if (business.type !== "universitario" || !business.universityName) {
-      return "";
-    }
+    if (business.type !== "universitario" || !business.universityName) return "";
 
     return `
       <span class="seller-profile-badge university">
@@ -77,17 +79,24 @@ const mockProducts = window.DALECLICK_DATA?.products || [];
   }
 
   function renderProfile(business, hours) {
-    const address = `${business.addressLine}, ${business.city}, ${business.department}`;
-    const hoursHtml = hours
-      .map((hour) => {
-        return `
+    const addressParts = [
+      business.addressLine,
+      business.city,
+      business.department
+    ].filter(Boolean);
+
+    const address = addressParts.length
+      ? addressParts.join(", ")
+      : "Dirección no disponible";
+
+    const hoursHtml = hours.length
+      ? hours.map((hour) => `
           <div class="seller-hours-item">
             <span class="seller-hours-day">${escapeHtml(hour.dayOfWeek)}</span>
             <span>${escapeHtml(formatHourRange(hour))}</span>
           </div>
-        `;
-      })
-      .join("");
+        `).join("")
+      : `<div class="seller-hours-item"><span class="seller-hours-day">Horario</span><span>No disponible</span></div>`;
 
     profileCard.innerHTML = `
       <div class="seller-profile-cover">
@@ -106,19 +115,19 @@ const mockProducts = window.DALECLICK_DATA?.products || [];
             ${getUniversityBadge(business)}
           </div>
 
-          <p class="seller-profile-category">${escapeHtml(business.category)}</p>
+          <p class="seller-profile-category">${escapeHtml(business.category || "Sin categoría")}</p>
           <h1 class="seller-profile-name">${escapeHtml(business.businessName)}</h1>
-          <p class="seller-profile-description">${escapeHtml(business.description)}</p>
+          <p class="seller-profile-description">${escapeHtml(business.description || "Sin descripción disponible.")}</p>
 
           <div class="seller-profile-tags">
             <span class="seller-profile-tag">
               <span class="material-symbols-outlined">location_on</span>
-              ${escapeHtml(business.city)}, ${escapeHtml(business.department)}
+              ${escapeHtml([business.city, business.department].filter(Boolean).join(", ") || "Ubicación no disponible")}
             </span>
 
             <span class="seller-profile-tag">
               <span class="material-symbols-outlined">verified</span>
-              ${escapeHtml(business.status)}
+              ${escapeHtml(business.status || "Activo")}
             </span>
           </div>
         </div>
@@ -130,12 +139,12 @@ const mockProducts = window.DALECLICK_DATA?.products || [];
             <div class="seller-info-list">
               <div class="seller-info-item">
                 <span class="material-symbols-outlined">call</span>
-                <span>${escapeHtml(business.contactPhone)}</span>
+                <span>${escapeHtml(business.contactPhone || "No disponible")}</span>
               </div>
 
               <div class="seller-info-item">
                 <span class="material-symbols-outlined">mail</span>
-                <span>${escapeHtml(business.contactEmail)}</span>
+                <span>${escapeHtml(business.contactEmail || "No disponible")}</span>
               </div>
 
               <div class="seller-info-item">
@@ -145,7 +154,7 @@ const mockProducts = window.DALECLICK_DATA?.products || [];
 
               <div class="seller-info-item">
                 <span class="material-symbols-outlined">info</span>
-                <span>${escapeHtml(business.referenceNote)}</span>
+                <span>${escapeHtml(business.referenceNote || "Sin referencia adicional")}</span>
               </div>
             </div>
           </div>
@@ -192,8 +201,7 @@ const mockProducts = window.DALECLICK_DATA?.products || [];
       })
       .join("");
 
-    const tabs = categoriesTabs.querySelectorAll(".seller-category-tab");
-    tabs.forEach((tab) => {
+    categoriesTabs.querySelectorAll(".seller-category-tab").forEach((tab) => {
       tab.addEventListener("click", () => {
         activeCategory = tab.dataset.category;
         renderCategoryTabs(categories);
@@ -231,7 +239,7 @@ const mockProducts = window.DALECLICK_DATA?.products || [];
       );
     }
 
-    if (filteredProducts.length === 0) {
+    if (!filteredProducts.length) {
       productsGrid.innerHTML = "";
       noResultsMessage.style.display = "block";
       productsCount.textContent = "0 productos encontrados";
@@ -243,29 +251,52 @@ const mockProducts = window.DALECLICK_DATA?.products || [];
     productsCount.textContent = `${filteredProducts.length} producto${filteredProducts.length !== 1 ? "s" : ""} disponible${filteredProducts.length !== 1 ? "s" : ""}`;
   }
 
-  function loadSellerProfile() {
+  async function loadSellerProfile() {
     const businessID = getBusinessIdFromUrl();
 
-    const business =
-      mockBusinesses.find((item) => item.businessID === businessID) ||
-      mockBusinesses[0];
+    try {
+      const response = await fetch(`${API_BASE}/${businessID}`);
+      const data = await response.json();
 
-    const businessHours = mockBusinessHours.filter(
-      (item) => item.businessID === business.businessID
-    );
+      if (!response.ok || !data.ok || !data.business) {
+        profileCard.innerHTML = `
+          <div class="seller-profile-loading">
+            No se pudo cargar el perfil del emprendimiento.
+          </div>
+        `;
+        productsGrid.innerHTML = "";
+        productsCount.textContent = "No disponible";
+        noResultsMessage.style.display = "block";
+        return;
+      }
 
-    const businessProducts = mockProducts.filter(
-      (item) => item.businessID === business.businessID
-    );
+      currentBusiness = data.business;
 
-    currentBusiness = business;
-    currentProducts = businessProducts;
+      const hours = Array.isArray(data.hours)
+        ? data.hours
+        : Array.isArray(data.business.hours)
+          ? data.business.hours
+          : [];
 
-    renderProfile(currentBusiness, businessHours);
+      currentProducts = Array.isArray(data.products)
+        ? data.products
+        : Array.isArray(data.business.products)
+          ? data.business.products
+          : [];
 
-    const categories = getAvailableCategories(currentProducts);
-    renderCategoryTabs(categories);
-    renderProducts();
+      renderProfile(currentBusiness, hours);
+
+      const categories = getAvailableCategories(currentProducts);
+      renderCategoryTabs(categories);
+      renderProducts();
+    } catch (error) {
+      console.error("Error cargando seller profile:", error);
+      profileCard.innerHTML = `
+        <div class="seller-profile-loading">
+          Error al cargar el perfil del emprendimiento.
+        </div>
+      `;
+    }
   }
 
   loadSellerProfile();

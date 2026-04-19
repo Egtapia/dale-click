@@ -9,92 +9,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   if (!sellersGrid) return;
 
-  const mockSellers = [
-    {
-      businessID: 1,
-      businessName: "Maria Store",
-      description: "Moda, ropa y accesorios para quienes buscan estilo y comodidad.",
-      category: "Ropa",
-      categoryValue: "ropa",
-      location: "Esquipulas",
-      locationValue: "esquipulas",
-      type: "local",
-      universityName: "",
-      universityValue: "",
-      logoURL: "../assets/images/logo-seller-1.png",
-      contactPhone: "7777 7777"
-    },
-    {
-      businessID: 2,
-      businessName: "Foto Studio",
-      description: "Cámaras, accesorios y artículos de fotografía para estudiantes y emprendedores.",
-      category: "Tecnología",
-      categoryValue: "tecnologia",
-      location: "Managua",
-      locationValue: "managua",
-      type: "universitario",
-      universityName: "Keiser University Latin American Campus (Managua)",
-      universityValue: "keiser-managua",
-      logoURL: "../assets/images/logo-seller-2.png",
-      contactPhone: "8888 8888"
-    },
-    {
-      businessID: 3,
-      businessName: "Beauty Box",
-      description: "Productos de belleza, cuidado personal y sets pensados para el día a día.",
-      category: "Belleza",
-      categoryValue: "belleza",
-      location: "San Marcos",
-      locationValue: "san-marcos",
-      type: "universitario",
-      universityName: "Keiser University Latin American Campus (San Marcos)",
-      universityValue: "keiser-san-marcos",
-      logoURL: "../assets/images/logo-seller-3.png",
-      contactPhone: "8585 8585"
-    },
-    {
-      businessID: 4,
-      businessName: "Casa Nova",
-      description: "Artículos para el hogar, decoración y soluciones prácticas para tus espacios.",
-      category: "Hogar",
-      categoryValue: "hogar",
-      location: "San Marcos",
-      locationValue: "san-marcos",
-      type: "local",
-      universityName: "",
-      universityValue: "",
-      logoURL: "../assets/images/logo-seller-4.png",
-      contactPhone: "8383 8383"
-    },
-    {
-      businessID: 5,
-      businessName: "Snack Point",
-      description: "Bebidas, snacks y alimentos listos para acompañarte en tu rutina diaria.",
-      category: "Alimentos",
-      categoryValue: "alimentos",
-      location: "Managua",
-      locationValue: "managua",
-      type: "universitario",
-      universityName: "UAM",
-      universityValue: "uam",
-      logoURL: "../assets/images/logo-seller-5.png",
-      contactPhone: "8787 8787"
-    },
-    {
-      businessID: 6,
-      businessName: "ServiClick",
-      description: "Servicios prácticos dirigidos a estudiantes, emprendedores y negocios locales.",
-      category: "Servicios",
-      categoryValue: "servicios",
-      location: "San Marcos",
-      locationValue: "san-marcos",
-      type: "universitario",
-      universityName: "UNI",
-      universityValue: "uni",
-      logoURL: "../assets/images/logo-seller-6.png",
-      contactPhone: "8686 8686"
-    }
-  ];
+  const API_BASE = "http://localhost:3001/api/businesses";
+  let allSellers = [];
 
   function normalizeText(text) {
     return (text || "")
@@ -115,11 +31,9 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function getLogoUrl(seller) {
-    if (seller.logoURL && seller.logoURL.trim() !== "") {
-      return seller.logoURL;
-    }
-
-    return "../assets/images/logo-seller-default.png";
+    return seller.logoURL && seller.logoURL.trim() !== ""
+      ? seller.logoURL
+      : "../assets/images/logo-seller-default.png";
   }
 
   function getTypeBadge(seller) {
@@ -141,9 +55,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function getUniversityTag(seller) {
-    if (seller.type !== "universitario" || !seller.universityName) {
-      return "";
-    }
+    if (seller.type !== "universitario" || !seller.universityName) return "";
 
     return `
       <span class="seller-tag">
@@ -219,12 +131,12 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function applyFilters() {
-    const searchTerm = normalizeText(searchInput.value);
-    const selectedType = normalizeText(typeFilter.value);
-    const selectedUniversity = normalizeText(universityFilter.value);
-    const selectedLocation = normalizeText(locationFilter.value);
+    const searchTerm = normalizeText(searchInput?.value);
+    const selectedType = normalizeText(typeFilter?.value);
+    const selectedUniversity = normalizeText(universityFilter?.value);
+    const selectedLocation = normalizeText(locationFilter?.value);
 
-    let filteredSellers = [...mockSellers];
+    let filteredSellers = [...allSellers];
 
     if (searchTerm) {
       filteredSellers = filteredSellers.filter((seller) =>
@@ -232,19 +144,19 @@ document.addEventListener("DOMContentLoaded", () => {
       );
     }
 
-    if (selectedType !== "todos") {
+    if (selectedType && selectedType !== "todos") {
       filteredSellers = filteredSellers.filter(
         (seller) => normalizeText(seller.type) === selectedType
       );
     }
 
-    if (selectedUniversity !== "todas") {
+    if (selectedUniversity && selectedUniversity !== "todas") {
       filteredSellers = filteredSellers.filter(
         (seller) => normalizeText(seller.universityValue) === selectedUniversity
       );
     }
 
-    if (selectedLocation !== "todas") {
+    if (selectedLocation && selectedLocation !== "todas") {
       filteredSellers = filteredSellers.filter(
         (seller) => normalizeText(seller.locationValue) === selectedLocation
       );
@@ -261,25 +173,40 @@ document.addEventListener("DOMContentLoaded", () => {
     `;
   }
 
-  renderLoadingState();
+  async function loadBusinesses() {
+    renderLoadingState();
 
-  setTimeout(() => {
-    applyFilters();
-  }, 150);
+    try {
+      const response = await fetch(API_BASE);
+      const data = await response.json();
 
-  if (searchInput) {
-    searchInput.addEventListener("input", applyFilters);
+      if (!response.ok || !data.ok || !Array.isArray(data.businesses)) {
+        sellersGrid.innerHTML = `
+          <article class="sellers-message-card">
+            <p>No se pudieron cargar los emprendedores.</p>
+          </article>
+        `;
+        resultsCount.textContent = "No disponible";
+        return;
+      }
+
+      allSellers = data.businesses;
+      applyFilters();
+    } catch (error) {
+      console.error("Error cargando emprendedores:", error);
+      sellersGrid.innerHTML = `
+        <article class="sellers-message-card">
+          <p>Error al conectar con el servidor.</p>
+        </article>
+      `;
+      resultsCount.textContent = "No disponible";
+    }
   }
 
-  if (typeFilter) {
-    typeFilter.addEventListener("change", applyFilters);
-  }
+  searchInput?.addEventListener("input", applyFilters);
+  typeFilter?.addEventListener("change", applyFilters);
+  universityFilter?.addEventListener("change", applyFilters);
+  locationFilter?.addEventListener("change", applyFilters);
 
-  if (universityFilter) {
-    universityFilter.addEventListener("change", applyFilters);
-  }
-
-  if (locationFilter) {
-    locationFilter.addEventListener("change", applyFilters);
-  }
+  loadBusinesses();
 });

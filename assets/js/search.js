@@ -18,6 +18,21 @@ document.addEventListener("DOMContentLoaded", () => {
     return document.querySelectorAll(".product-card");
   }
 
+  function getCategoryAliases(category) {
+    const normalizedCategory = normalizeText(category);
+
+    const aliasesMap = {
+      belleza: ["belleza", "cosmeticos", "cosmetico", "cuidado personal", "maquillaje"],
+      hogar: ["hogar", "decoracion", "decoracion y hogar", "articulos utiles", "casa"],
+      alimentos: ["alimentos", "comida", "bebidas", "snacks", "salud y bienestar"],
+      tecnologia: ["tecnologia", "tecnologia y accesorios", "accesorios", "dispositivos"],
+      ropa: ["ropa", "moda", "vestimenta", "checkroom"],
+      servicios: ["servicios", "educacion", "tutoria", "asesoria", "soporte"]
+    };
+
+    return aliasesMap[normalizedCategory] || [normalizedCategory];
+  }
+
   function showNoResults(show) {
     if (!noResultsMessage) return;
     noResultsMessage.style.display = show ? "block" : "none";
@@ -37,14 +52,20 @@ document.addEventListener("DOMContentLoaded", () => {
     let visibleCount = 0;
 
     productCards.forEach((card) => {
-      const productName = normalizeText(card.dataset.name);
-      const productCategory = normalizeText(card.dataset.category);
+      const productName = normalizeText(card.dataset.name || card.querySelector(".product-card-title")?.textContent);
+      const productCategory = normalizeText(card.dataset.category || card.querySelector(".product-card-category")?.textContent);
+      const businessName = normalizeText(card.dataset.business || card.querySelector(".product-card-business")?.textContent);
 
       const matchesSearch =
-        searchTerm === "" || productName.includes(searchTerm);
+        searchTerm === "" ||
+        productName.includes(searchTerm) ||
+        productCategory.includes(searchTerm) ||
+        businessName.includes(searchTerm);
 
+      const categoryAliases = getCategoryAliases(selectedCategory);
       const matchesCategory =
-        selectedCategory === "todas" || productCategory === selectedCategory;
+        selectedCategory === "todas" ||
+        categoryAliases.some((alias) => productCategory.includes(alias));
 
       if (matchesSearch && matchesCategory) {
         card.style.display = "block";
@@ -76,12 +97,14 @@ document.addEventListener("DOMContentLoaded", () => {
     const card = event.currentTarget;
     const href = card.getAttribute("href");
 
-    if (!href || !href.includes("?categoria=")) return;
+    if (!href) return;
 
     event.preventDefault();
 
     const url = new URL(href, window.location.origin);
-    const categoria = url.searchParams.get("categoria");
+    const categoria =
+      url.searchParams.get("categoria") ||
+      url.searchParams.get("category");
 
     if (categoria) {
       setCategoryAndFilter(categoria);

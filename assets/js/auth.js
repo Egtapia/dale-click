@@ -1,217 +1,166 @@
-document.addEventListener("DOMContentLoaded", () => {
-  const registerForm = document.getElementById("register-form");
-  const loginForm = document.getElementById("login-form");
-  const togglePasswordButtons = document.querySelectorAll(".toggle-password-btn");
+const API_BASE_URL = "http://localhost:3001/api";
 
-  const API_BASE_URL = "http://localhost:3001/api";
-
-  function sanitizeClientText(value) {
+function sanitizeClientText(value) {
   return String(value || "").trim();
 }
 
-  function showMessage(element, message) {
-    if (!element) return;
-    element.textContent = message;
-    element.style.display = "block";
-  }
+function sanitizeIdentifier(value) {
+  return sanitizeClientText(value).replace(/\s+/g, " ");
+}
 
-  function hideMessage(element) {
-    if (!element) return;
-    element.textContent = "";
-    element.style.display = "none";
-  }
+function showMessage(element, message, type = "error") {
+  if (!element) return;
+  element.textContent = message;
+  element.className = `auth-message ${type}`;
+}
 
-  function normalizeText(value) {
-    return String(value || "").trim();
-  }
+function setSession(user, token) {
+  const safeSession = {
+    userID: user.userID,
+    username: user.username,
+    firstName: user.firstName,
+    lastName: user.lastName,
+    email: user.email,
+    phone: user.phone,
+    nationalID: user.nationalID || "",
+    roleID: user.roleID
+  };
 
-  function validateEmail(email) {
-    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-  }
+  localStorage.setItem("daleclick_session", JSON.stringify(safeSession));
+  localStorage.setItem("daleclick_token", token);
+}
 
-  function validatePhone(phone) {
-    return /^[0-9+\-\s()]{8,20}$/.test(phone);
-  }
+function togglePasswordVisibility(button) {
+  const targetId = button.getAttribute("data-target");
+  const input = document.getElementById(targetId);
+  const icon = button.querySelector(".material-symbols-outlined");
 
-  function setSession(user, token) {
-    const safeSession = {
-      userID: user.userID,
-      username: user.username,
-      firstName: user.firstName,
-      lastName: user.lastName,
-      email: user.email,
-      phone: user.phone,
-      roleID: user.roleID
-    };
+  if (!input || !icon) return;
 
-    localStorage.setItem("daleclick_session", JSON.stringify(safeSession));
-    localStorage.setItem("daleclick_token", token);
-  }
+  const isPassword = input.type === "password";
+  input.type = isPassword ? "text" : "password";
+  icon.textContent = isPassword ? "visibility_off" : "visibility";
+}
 
-  function clearLegacyMockUsers() {
-    localStorage.removeItem("daleclick_mock_users");
-  }
-
-  function togglePasswordVisibility(targetId, button) {
-    const input = document.getElementById(targetId);
-    if (!input || !button) return;
-
-    const icon = button.querySelector(".material-symbols-outlined");
-    const isPassword = input.type === "password";
-
-    input.type = isPassword ? "text" : "password";
-
-    if (icon) {
-      icon.textContent = isPassword ? "visibility_off" : "visibility";
-    }
-  }
-
-  togglePasswordButtons.forEach((button) => {
-    button.addEventListener("click", () => {
-      const targetId = button.dataset.target;
-      togglePasswordVisibility(targetId, button);
-    });
-  });
-
-  if (registerForm) {
-    registerForm.addEventListener("submit", async (event) => {
-      event.preventDefault();
-
-      const errorMessage = document.getElementById("register-error-message");
-      const successMessage = document.getElementById("register-success-message");
-
-      hideMessage(errorMessage);
-      hideMessage(successMessage);
-
-      const firstName = normalizeText(document.getElementById("first-name")?.value);
-      const lastName = normalizeText(document.getElementById("last-name")?.value);
-      const username = normalizeText(document.getElementById("username")?.value);
-      const email = normalizeText(document.getElementById("email")?.value);
-      const phone = normalizeText(document.getElementById("phone")?.value);
-      const password = normalizeText(document.getElementById("password")?.value);
-      const confirmPassword = normalizeText(document.getElementById("confirm-password")?.value);
-      const acceptedTerms = document.getElementById("terms")?.checked;
-
-      if (!firstName || !lastName || !username || !email || !phone || !password || !confirmPassword) {
-        showMessage(errorMessage, "Completa todos los campos obligatorios.");
-        return;
-      }
-
-      if (!validateEmail(email)) {
-        showMessage(errorMessage, "Ingresa un correo electrónico válido.");
-        return;
-      }
-
-      if (!validatePhone(phone)) {
-        showMessage(errorMessage, "Ingresa un número de teléfono válido.");
-        return;
-      }
-
-      if (password.length < 6) {
-        showMessage(errorMessage, "La contraseña debe tener al menos 6 caracteres.");
-        return;
-      }
-
-      if (password !== confirmPassword) {
-        showMessage(errorMessage, "Las contraseñas no coinciden.");
-        return;
-      }
-
-      if (!acceptedTerms) {
-        showMessage(errorMessage, "Debes aceptar los términos para continuar.");
-        return;
-      }
-
-      try {
-        const response = await fetch(`${API_BASE_URL}/auth/register`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({
-            username,
-            firstName,
-            lastName,
-            email,
-            password,
-            phone
-          })
-        });
-
-        const data = await response.json();
-
-        if (!response.ok) {
-          showMessage(errorMessage, data.message || data.error || "No se pudo crear la cuenta.");
-          return;
-        }
-
-        clearLegacyMockUsers();
-        showMessage(successMessage, data.message || "Cuenta creada correctamente.");
-
-        registerForm.reset();
-
-        setTimeout(() => {
-          window.location.href = "./login.html";
-        }, 1200);
-      } catch (error) {
-        showMessage(errorMessage, "No se pudo conectar con el servidor.");
-      }
-    });
-  }
-
-  if (loginForm) {
-    loginForm.addEventListener("submit", async (event) => {
-      event.preventDefault();
-
-      const errorMessage = document.getElementById("login-error-message");
-      const successMessage = document.getElementById("login-success-message");
-
-      hideMessage(errorMessage);
-      hideMessage(successMessage);
-
-      const identifier = normalizeText(document.getElementById("login-email")?.value);
-      const password = normalizeText(document.getElementById("login-password")?.value);
-
-      if (!identifier || !password) {
-        showMessage(errorMessage, "Completa todos los campos.");
-        return;
-      }
-
-      try {
-        const response = await fetch(`${API_BASE_URL}/auth/login`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({
-            identifier,
-            password
-          })
-        });
-
-        const data = await response.json();
-
-        if (!response.ok) {
-          showMessage(errorMessage, data.message || data.error || "No se pudo iniciar sesión.");
-          return;
-        }
-
-        if (!data.token || !data.user) {
-          showMessage(errorMessage, "La respuesta del servidor no es válida.");
-          return;
-        }
-
-        setSession(data.user, data.token);
-        showMessage(successMessage, data.message || "Inicio de sesión exitoso.");
-
-        loginForm.reset();
-
-        setTimeout(() => {
-          window.location.href = "./index.html";
-        }, 1000);
-      } catch (error) {
-        showMessage(errorMessage, "No se pudo conectar con el servidor.");
-      }
-    });
-  }
+document.querySelectorAll(".toggle-password").forEach((button) => {
+  button.addEventListener("click", () => togglePasswordVisibility(button));
 });
+
+const registerForm = document.getElementById("register-form");
+const loginForm = document.getElementById("login-form");
+
+if (registerForm) {
+  registerForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+
+    const messageBox = document.getElementById("register-message");
+
+    const firstName = sanitizeClientText(document.getElementById("firstName")?.value);
+    const lastName = sanitizeClientText(document.getElementById("lastName")?.value);
+    const username = sanitizeIdentifier(document.getElementById("username")?.value);
+    const email = sanitizeIdentifier(document.getElementById("email")?.value).toLowerCase();
+    const phone = sanitizeIdentifier(document.getElementById("phone")?.value);
+    const nationalID = sanitizeIdentifier(document.getElementById("nationalID")?.value).toUpperCase();
+    const password = sanitizeClientText(document.getElementById("password")?.value);
+    const confirmPassword = sanitizeClientText(document.getElementById("confirmPassword")?.value);
+    const termsAccepted = document.getElementById("terms")?.checked;
+
+    if (!firstName || !lastName || !username || !email || !phone || !nationalID || !password || !confirmPassword) {
+      showMessage(messageBox, "Completa todos los campos obligatorios.");
+      return;
+    }
+
+    if (!termsAccepted) {
+      showMessage(messageBox, "Debes aceptar los términos para crear tu cuenta.");
+      return;
+    }
+
+    if (password.length < 8) {
+      showMessage(messageBox, "La contraseña debe tener al menos 8 caracteres.");
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      showMessage(messageBox, "Las contraseñas no coinciden.");
+      return;
+    }
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/auth/register`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          firstName,
+          lastName,
+          username,
+          email,
+          phone,
+          nationalID,
+          password
+        })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        showMessage(messageBox, data.message || "No se pudo completar el registro.");
+        return;
+      }
+
+      showMessage(messageBox, "Cuenta creada correctamente. Ahora puedes iniciar sesión.", "success");
+
+      setTimeout(() => {
+        window.location.href = "./login.html";
+      }, 1200);
+    } catch (error) {
+      showMessage(messageBox, "No se pudo conectar con el servidor.");
+    }
+  });
+}
+
+if (loginForm) {
+  loginForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+
+    const messageBox = document.getElementById("login-message");
+
+    const identifier = sanitizeIdentifier(document.getElementById("identifier")?.value);
+    const password = sanitizeClientText(document.getElementById("password")?.value);
+
+    if (!identifier || !password) {
+      showMessage(messageBox, "Completa tus credenciales.");
+      return;
+    }
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/auth/login`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          identifier,
+          password
+        })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        showMessage(messageBox, data.message || "No se pudo iniciar sesión.");
+        return;
+      }
+
+      setSession(data.user, data.token);
+      showMessage(messageBox, "Login exitoso. Redirigiendo...", "success");
+
+      setTimeout(() => {
+        window.location.href = "./index.html";
+      }, 800);
+    } catch (error) {
+      showMessage(messageBox, "No se pudo conectar con el servidor.");
+    }
+  });
+}

@@ -1,37 +1,41 @@
-import reservationRoutes from "./routes/reservation.routes.js";
-import authRoutes from "./routes/auth.routes.js";
-import pool from "./config/db.js";
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
+
+import authRoutes from "./routes/auth.routes.js";
+import reservationRoutes from "./routes/reservation.routes.js";
+import productRoutes from "./routes/product.routes.js";
+import businessRoutes from "./routes/business.routes.js";
 
 dotenv.config();
 
 const app = express();
 
-// Middlewares
-app.use(cors());
+app.use(cors({
+  origin: [
+    "http://localhost:5500",
+    "http://127.0.0.1:5500"
+  ],
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"]
+}));
+
 app.use(express.json());
+
 app.use("/api/auth", authRoutes);
 app.use("/api/reservations", reservationRoutes);
+app.use("/api/products", productRoutes);
+app.use("/api/businesses", businessRoutes);
 
-// ruta base
 app.get("/", (req, res) => {
   res.json({
     ok: true,
-    message: "API de DC funcionando",
+    message: "API de Dale Click funcionando"
   });
 });
 
-const PORT = process.env.PORT || 3000;
-app.get("/test-db", async (req, res) => {
-  try {
-    const [rows] = await pool.query("SELECT 1");
-    res.json({ ok: true, message: "conexion a DB exitosa", rows });
-  } catch (error) {
-    res.status(500).json({ ok: false, error: error.message });
-  }
-});
+const PORT = process.env.PORT || 3001;
+
 app.listen(PORT, () => {
   console.log(`Servidor corriendo en http://localhost:${PORT}`);
 });

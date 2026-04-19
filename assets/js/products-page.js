@@ -1,134 +1,15 @@
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
   const productsGrid = document.getElementById("all-products-grid");
+  const resultsCount = document.getElementById("products-results-count");
+  const noResultsMessage = document.getElementById("all-products-no-results");
   const searchInput = document.getElementById("products-search-input");
   const categoryFilter = document.getElementById("products-category-filter");
   const sortFilter = document.getElementById("products-sort-filter");
-  const noResultsMessage = document.getElementById("all-products-no-results");
-  const resultsCount = document.getElementById("products-results-count");
 
   if (!productsGrid) return;
 
-  const mockProducts = [
-    {
-      productID: 1,
-      productName: "Cámara Canon",
-      price: 11000,
-      category: "Tecnología",
-      categoryValue: "tecnologia",
-      imageURL: "../assets/images/producto-1.jpg",
-      businessName: "Foto Studio"
-    },
-    {
-      productID: 2,
-      productName: "Cámara Sienna",
-      price: 4500,
-      category: "Tecnología",
-      categoryValue: "tecnologia",
-      imageURL: "../assets/images/producto-2.jpg",
-      businessName: "Foto Studio"
-    },
-    {
-      productID: 3,
-      productName: "Set de cuidado personal",
-      price: 3000,
-      category: "Belleza",
-      categoryValue: "belleza",
-      imageURL: "../assets/images/producto-3.jpg",
-      businessName: "Beauty Box"
-    },
-    {
-      productID: 4,
-      productName: "Zapatos casuales",
-      price: 3500,
-      category: "Ropa",
-      categoryValue: "ropa",
-      imageURL: "../assets/images/producto-4.jpg",
-      businessName: "Maria Store"
-    },
-    {
-      productID: 5,
-      productName: "Tacones elegantes",
-      price: 6500,
-      category: "Ropa",
-      categoryValue: "ropa",
-      imageURL: "../assets/images/producto-5.jpg",
-      businessName: "Maria Store"
-    },
-    {
-      productID: 6,
-      productName: "Cámara profesional",
-      price: 6900,
-      category: "Tecnología",
-      categoryValue: "tecnologia",
-      imageURL: "../assets/images/producto-6.jpg",
-      businessName: "Foto Studio"
-    },
-    {
-      productID: 7,
-      productName: "Cámara compacta",
-      price: 1500,
-      category: "Tecnología",
-      categoryValue: "tecnologia",
-      imageURL: "../assets/images/producto-7.jpg",
-      businessName: "Foto Studio"
-    },
-    {
-      productID: 8,
-      productName: "Zapatos deportivos",
-      price: 3600,
-      category: "Ropa",
-      categoryValue: "ropa",
-      imageURL: "../assets/images/producto-8.jpg",
-      businessName: "Maria Store"
-    },
-    {
-      productID: 9,
-      productName: "Lentes fotográficos",
-      price: 1500,
-      category: "Tecnología",
-      categoryValue: "tecnologia",
-      imageURL: "../assets/images/producto-9.jpg",
-      businessName: "Foto Studio"
-    },
-    {
-      productID: 10,
-      productName: "Tacones nude",
-      price: 2000,
-      category: "Ropa",
-      categoryValue: "ropa",
-      imageURL: "../assets/images/producto-10.jpg",
-      businessName: "Maria Store"
-    },
-    {
-      productID: 11,
-      productName: "Cámara vintage",
-      price: 2500,
-      category: "Tecnología",
-      categoryValue: "tecnologia",
-      imageURL: "../assets/images/producto-11.jpg",
-      businessName: "Foto Studio"
-    },
-    {
-      productID: 12,
-      productName: "Cámara clásica",
-      price: 3500,
-      category: "Tecnología",
-      categoryValue: "tecnologia",
-      imageURL: "../assets/images/producto-12.jpg",
-      businessName: "Foto Studio"
-    }
-  ];
-
-  let currentProducts = [...mockProducts];
-
-  function normalizeText(text) {
-    return (text || "")
-      .toString()
-      .toLowerCase()
-      .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, "")
-      .trim();
-  }
+  const API_URL = "http://localhost:3001/api/products";
+  let allProducts = [];
 
   function escapeHtml(text) {
     return String(text ?? "")
@@ -139,18 +20,66 @@ document.addEventListener("DOMContentLoaded", () => {
       .replace(/'/g, "&#039;");
   }
 
+  function normalizeText(text) {
+    return String(text ?? "")
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .trim();
+  }
+
+  function normalizeCategoryValue(categoryName) {
+    return normalizeText(categoryName).replace(/\s+/g, "-");
+  }
+
   function formatPrice(price) {
     const numericPrice = Number(price) || 0;
-    return `${numericPrice.toLocaleString("es-NI")} C$`;
+    return `${numericPrice.toLocaleString("es-NI", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    })} C$`;
+  }
+
+  function getImageUrl(product) {
+    if (product.imageURL && String(product.imageURL).trim() !== "") {
+      return product.imageURL;
+    }
+    return "../assets/images/producto-default.jpg";
+  }
+
+  function getCategoryLabel(product) {
+    return product.categoryName || product.category || "General";
+  }
+
+  function getCategoryValue(product) {
+    if (product.categoryValue) return product.categoryValue;
+    return normalizeCategoryValue(getCategoryLabel(product));
+  }
+
+  function getUrlCategory() {
+    const params = new URLSearchParams(window.location.search);
+    return params.get("category") || "todas";
+  }
+
+  function updateUrlCategory(category) {
+    const url = new URL(window.location.href);
+
+    if (!category || category === "todas") {
+      url.searchParams.delete("category");
+    } else {
+      url.searchParams.set("category", category);
+    }
+
+    window.history.replaceState({}, "", url);
   }
 
   function buildProductCard(product) {
     const productID = product.productID || "";
     const productName = escapeHtml(product.productName || "Producto sin nombre");
     const price = formatPrice(product.price);
-    const categoryLabel = escapeHtml(product.category || "General");
+    const categoryLabel = escapeHtml(getCategoryLabel(product));
+    const imageURL = escapeHtml(getImageUrl(product));
     const businessName = escapeHtml(product.businessName || "Emprendedor");
-    const imageURL = escapeHtml(product.imageURL || "../assets/images/producto-default.jpg");
     const detailUrl = `./product-detail.html?id=${encodeURIComponent(productID)}`;
 
     return `
@@ -185,22 +114,24 @@ document.addEventListener("DOMContentLoaded", () => {
     resultsCount.textContent = `${products.length} producto${products.length !== 1 ? "s" : ""} encontrado${products.length !== 1 ? "s" : ""}`;
   }
 
-  function applyFiltersAndSort() {
-    const searchTerm = normalizeText(searchInput.value);
-    const selectedCategory = normalizeText(categoryFilter.value);
-    const selectedSort = sortFilter.value;
+  function applyFilters() {
+    let filteredProducts = [...allProducts];
 
-    let filteredProducts = [...mockProducts];
+    const searchTerm = normalizeText(searchInput?.value || "");
+    const selectedCategory = categoryFilter?.value || "todas";
+    const selectedSort = sortFilter?.value || "default";
 
     if (searchTerm) {
       filteredProducts = filteredProducts.filter((product) =>
-        normalizeText(product.productName).includes(searchTerm)
+        normalizeText(product.productName).includes(searchTerm) ||
+        normalizeText(product.businessName).includes(searchTerm) ||
+        normalizeText(getCategoryLabel(product)).includes(searchTerm)
       );
     }
 
     if (selectedCategory !== "todas") {
       filteredProducts = filteredProducts.filter(
-        (product) => normalizeText(product.categoryValue) === selectedCategory
+        (product) => getCategoryValue(product) === selectedCategory
       );
     }
 
@@ -209,36 +140,71 @@ document.addEventListener("DOMContentLoaded", () => {
     } else if (selectedSort === "price-desc") {
       filteredProducts.sort((a, b) => Number(b.price) - Number(a.price));
     } else if (selectedSort === "name-asc") {
-      filteredProducts.sort((a, b) => a.productName.localeCompare(b.productName, "es"));
+      filteredProducts.sort((a, b) => String(a.productName).localeCompare(String(b.productName), "es"));
     } else if (selectedSort === "name-desc") {
-      filteredProducts.sort((a, b) => b.productName.localeCompare(a.productName, "es"));
+      filteredProducts.sort((a, b) => String(b.productName).localeCompare(String(a.productName), "es"));
     }
 
-    currentProducts = filteredProducts;
-    renderProducts(currentProducts);
+    renderProducts(filteredProducts);
   }
 
-  function applyCategoryFromUrl() {
-    const urlParams = new URLSearchParams(window.location.search);
-    const categoria = urlParams.get("categoria");
-
-    if (!categoria) return;
-
-    categoryFilter.value = categoria;
+  function renderLoadingState() {
+    productsGrid.innerHTML = `
+      <article class="products-message-card">
+        <p>Cargando productos...</p>
+      </article>
+    `;
   }
 
-  if (searchInput) {
-    searchInput.addEventListener("input", applyFiltersAndSort);
+  function renderErrorState() {
+    productsGrid.innerHTML = `
+      <article class="products-message-card">
+        <p>No se pudieron cargar los productos en este momento.</p>
+      </article>
+    `;
   }
 
-  if (categoryFilter) {
-    categoryFilter.addEventListener("change", applyFiltersAndSort);
+  async function fetchProductsFromApi() {
+    const response = await fetch(API_URL);
+    if (!response.ok) {
+      throw new Error(`Error al obtener productos: ${response.status}`);
+    }
+
+    const data = await response.json();
+
+    if (Array.isArray(data)) return data;
+    if (Array.isArray(data.products)) return data.products;
+    if (Array.isArray(data.data)) return data.data;
+
+    return [];
   }
 
-  if (sortFilter) {
-    sortFilter.addEventListener("change", applyFiltersAndSort);
+  async function loadProducts() {
+    try {
+      renderLoadingState();
+
+      allProducts = await fetchProductsFromApi();
+
+      const urlCategory = getUrlCategory();
+      if (categoryFilter && urlCategory) {
+        categoryFilter.value = urlCategory;
+      }
+
+      applyFilters();
+    } catch (error) {
+      console.error("Error cargando productos:", error);
+      renderErrorState();
+    }
   }
 
-  applyCategoryFromUrl();
-  applyFiltersAndSort();
+  searchInput?.addEventListener("input", applyFilters);
+
+  categoryFilter?.addEventListener("change", () => {
+    updateUrlCategory(categoryFilter.value);
+    applyFilters();
+  });
+
+  sortFilter?.addEventListener("change", applyFilters);
+
+  await loadProducts();
 });
