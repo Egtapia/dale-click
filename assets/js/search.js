@@ -76,6 +76,36 @@ document.addEventListener("DOMContentLoaded", () => {
     noResultsMessage.style.display = show ? "block" : "none";
   }
 
+  function getCategoryValueFromCard(card) {
+    const href = card?.getAttribute("href");
+    if (!href) return "";
+
+    const url = new URL(href, window.location.origin);
+    return (
+      url.searchParams.get("categoria") ||
+      url.searchParams.get("category") ||
+      ""
+    );
+  }
+
+  function syncActiveCategoryCard(selectedCategoryValue) {
+    if (categoryCards.length === 0) return;
+
+    const normalizedSelectedValue = normalizeText(selectedCategoryValue);
+
+    categoryCards.forEach((card) => {
+      const cardCategoryValue = normalizeText(
+        resolveCategoryValue(getCategoryValueFromCard(card))
+      );
+      const isActive =
+        normalizedSelectedValue !== "" &&
+        normalizedSelectedValue !== "todas" &&
+        cardCategoryValue === normalizedSelectedValue;
+
+      card.classList.toggle("is-active", isActive);
+    });
+  }
+
   function filterProducts() {
     if (typeof window.applyHomeFilters === "function") {
       window.applyHomeFilters();
@@ -125,14 +155,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     categoryFilter.value = resolveCategoryValue(categoryValue);
     filterProducts();
-
-    const productsSection = document.querySelector(".products-section");
-    if (productsSection) {
-      productsSection.scrollIntoView({
-        behavior: "smooth",
-        block: "start"
-      });
-    }
+    syncActiveCategoryCard(categoryFilter.value);
   }
 
   function handleCategoryCardClick(event) {
@@ -166,7 +189,10 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     if (categoryFilter) {
-      categoryFilter.addEventListener("change", filterProducts);
+      categoryFilter.addEventListener("change", () => {
+        filterProducts();
+        syncActiveCategoryCard(categoryFilter.value);
+      });
     }
 
     if (searchButton) {
@@ -186,16 +212,20 @@ document.addEventListener("DOMContentLoaded", () => {
     if (typeof window.applyHomeFilters !== "function") {
       filterProducts();
     }
+
+    syncActiveCategoryCard(categoryFilter?.value || "todas");
   });
 
   window.addEventListener("categoriesLoaded", () => {
     if (typeof window.applyHomeFilters === "function") {
       window.applyHomeFilters();
-      return;
+    } else {
+      filterProducts();
     }
 
-    filterProducts();
+    syncActiveCategoryCard(categoryFilter?.value || "todas");
   });
 
   filterProducts();
+  syncActiveCategoryCard(categoryFilter?.value || "todas");
 });
