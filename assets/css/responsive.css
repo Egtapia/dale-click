@@ -68,6 +68,14 @@
   .categories-grid {
   grid-template-columns: repeat(3, 1fr);
 }
+
+  .reviews-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .reviews-cards {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 
 /* Tablet pequeña */
@@ -149,6 +157,18 @@
 .categories-grid {
   grid-template-columns: repeat(2, 1fr);
 }
+
+  .reviews-intro h2 {
+    font-size: 2.1rem;
+  }
+
+  .review-form-row {
+    grid-template-columns: 1fr;
+  }
+
+  .reviews-cards {
+    grid-template-columns: 1fr;
+  }
 }
 
 /* Móvil */
@@ -284,4 +304,24 @@
   min-height: auto;
   padding: 18px 14px;
 }
+
+  .reviews-section {
+    padding: 28px 0 36px;
+  }
+
+  .reviews-intro h2 {
+    font-size: 1.75rem;
+  }
+
+  .reviews-summary-card,
+  .review-card,
+  .review-form-card {
+    border-radius: 20px;
+    padding: 20px;
+  }
+
+  .review-submit-btn {
+    width: 100%;
+    justify-content: center;
+  }
 }

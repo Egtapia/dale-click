@@ -60,17 +60,21 @@
                   <span class="material-symbols-outlined">person</span>
                   Mi cuenta
                 </a>
-                <a href="./my-reservations.html" class="account-nav-link active">
+                <a href="./my-reservations.html" class="account-nav-link active" id="reservations-nav-link">
                   <span class="material-symbols-outlined">inventory_2</span>
                   Mis reservas
                 </a>
+                <button type="button" class="account-nav-link account-nav-button" id="history-toggle-button">
+                  <span class="material-symbols-outlined">history</span>
+                  Historial
+                </button>
               </nav>
             </aside>
 
             <section class="account-content">
               <div class="account-content-card reveal reveal-delay-3">
                 <div class="account-content-header">
-                  <h1>Mis reservas</h1>
+                  <h1 id="reservations-view-title">Mis reservas</h1>
                   <p id="reservations-count-text">Aquí verás los productos que has reservado.</p>
                 </div>
 

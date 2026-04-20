@@ -1,5 +1,6 @@
 const PRODUCTS_API_URL = "http://localhost:3001/api/products";
 const CATEGORIES_API_URL = "http://localhost:3001/api/products/categories";
+let allHomeProducts = [];
 
 function escapeHtml(text) {
   return String(text ?? "")
@@ -60,7 +61,7 @@ function populateCategoryFilter(categories) {
   window.dispatchEvent(new Event("categoriesLoaded"));
 }
 
-function renderProducts(products) {
+function renderProducts(products, limit = 12) {
   const container = document.getElementById("products-grid");
   const noResultsMessage = document.getElementById("no-results-message");
 
@@ -76,7 +77,7 @@ function renderProducts(products) {
 
   if (noResultsMessage) noResultsMessage.style.display = "none";
 
-  products.slice(0, 12).forEach((product) => {
+  products.slice(0, limit).forEach((product) => {
     const card = document.createElement("article");
     card.className = "product-card";
     card.dataset.name = String(product.productName || "");
@@ -112,6 +113,48 @@ function renderProducts(products) {
   window.dispatchEvent(new Event("productsRendered"));
 }
 
+function getActiveHomeFilters() {
+  const searchInput = document.getElementById("search-input");
+  const categoryFilter = document.getElementById("category-filter");
+
+  return {
+    searchTerm: normalizeText(searchInput?.value || ""),
+    selectedCategory: categoryFilter?.value || "todas"
+  };
+}
+
+function getFilteredHomeProducts() {
+  const { searchTerm, selectedCategory } = getActiveHomeFilters();
+
+  return allHomeProducts.filter((product) => {
+    const productName = normalizeText(product.productName);
+    const businessName = normalizeText(product.businessName);
+    const categoryName = normalizeText(product.categoryName);
+    const categoryValue = normalizeText(product.categoryValue);
+
+    const matchesSearch =
+      searchTerm === "" ||
+      productName.includes(searchTerm) ||
+      businessName.includes(searchTerm) ||
+      categoryName.includes(searchTerm) ||
+      categoryValue.includes(searchTerm);
+
+    const matchesCategory =
+      selectedCategory === "todas" ||
+      product.categoryValue === selectedCategory;
+
+    return matchesSearch && matchesCategory;
+  });
+}
+
+function applyHomeFilters() {
+  const { searchTerm, selectedCategory } = getActiveHomeFilters();
+  const filteredProducts = getFilteredHomeProducts();
+  const shouldLimitResults = searchTerm === "" && selectedCategory === "todas";
+
+  renderProducts(filteredProducts, shouldLimitResults ? 12 : filteredProducts.length);
+}
+
 async function fetchProducts() {
   const response = await fetch(PRODUCTS_API_URL);
   const data = await response.json();
@@ -141,8 +184,10 @@ async function loadHomeData() {
       fetchProducts()
     ]);
 
+    allHomeProducts = Array.isArray(products) ? products : [];
     populateCategoryFilter(categories);
-    renderProducts(products);
+    window.applyHomeFilters = applyHomeFilters;
+    applyHomeFilters();
   } catch (error) {
     console.error("Error cargando datos del home:", error);
     renderProducts([]);

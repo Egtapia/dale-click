@@ -4,6 +4,23 @@
   gap: 16px;
 }
 
+.account-nav-button {
+  width: 100%;
+  border: none;
+  text-align: left;
+  cursor: pointer;
+  font: inherit;
+}
+
+.account-nav-button.active {
+  background: linear-gradient(135deg, #2a6bc2 0%, #0f4c97 100%);
+  color: #fff;
+}
+
+.account-nav-button.active .material-symbols-outlined {
+  color: #fff;
+}
+
 .reservation-card {
   background-color: #faf8f3;
   border: 1px solid rgba(0, 0, 0, 0.04);

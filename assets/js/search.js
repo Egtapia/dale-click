@@ -77,6 +77,11 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function filterProducts() {
+    if (typeof window.applyHomeFilters === "function") {
+      window.applyHomeFilters();
+      return;
+    }
+
     const productCards = getProductCards();
 
     if (!productCards.length) {
@@ -178,10 +183,17 @@ document.addEventListener("DOMContentLoaded", () => {
   bindEvents();
 
   window.addEventListener("productsRendered", () => {
-    filterProducts();
+    if (typeof window.applyHomeFilters !== "function") {
+      filterProducts();
+    }
   });
 
   window.addEventListener("categoriesLoaded", () => {
+    if (typeof window.applyHomeFilters === "function") {
+      window.applyHomeFilters();
+      return;
+    }
+
     filterProducts();
   });
 
