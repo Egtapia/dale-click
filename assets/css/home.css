@@ -14,11 +14,42 @@
   justify-content: space-between;
   gap: 40px;
   position: relative;
-  overflow: visible;
+  overflow: hidden;
+}
+
+.hero-background {
+  position: absolute;
+  inset: 0;
+}
+
+.hero-bg-slide {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity 0.8s ease;
+}
+
+.hero-bg-slide.is-active {
+  opacity: 1;
+}
+
+.hero-bg-slide img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.hero-overlay {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(90deg, rgba(243, 207, 122, 0.92) 0%, rgba(243, 207, 122, 0.88) 38%, rgba(243, 207, 122, 0.3) 72%, rgba(243, 207, 122, 0.16) 100%);
 }
 
 .hero-content {
   max-width: 620px;
+  position: relative;
+  z-index: 1;
 }
 
 .hero-content h1 {
@@ -38,22 +69,9 @@
   font-weight: 400;
 }
 
-.hero-image {
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.hero-image img {
-  width: 320px;
-  height: auto;
-  object-fit: contain;
-}
-
 /* SEARCH SECTION */
 .search-section {
-  margin-top: -78px;
+  margin-top: -68px;
   position: relative;
   z-index: 3;
 }
@@ -62,15 +80,17 @@
   width: 100%;
   max-width: 1160px;
   margin: 0 auto;
-  background: linear-gradient(135deg, #0f4c97 0%, #1557a8 100%);
-  border-radius: 30px;
-  box-shadow: 0 20px 35px rgba(9, 44, 92, 0.22);
-  padding: 30px 34px;
+  background:
+    linear-gradient(135deg, rgba(12, 58, 114, 0.96) 0%, rgba(24, 91, 174, 0.94) 100%);
+  border-radius: 32px;
+  box-shadow: 0 24px 42px rgba(9, 44, 92, 0.22);
+  padding: 28px 30px;
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
   gap: 34px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(12px);
 }
 
 .search-box-area {
@@ -81,21 +101,24 @@
 .filters-title {
   display: block;
   color: var(--color-white);
-  font-size: 1.15rem;
-  font-weight: 600;
+  font-size: 1rem;
+  font-weight: 700;
   margin-bottom: 14px;
-  letter-spacing: 0.2px;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
 }
 
 .search-input-wrapper {
-  background-color: #ffffff;
+  background-color: rgba(255, 255, 255, 0.96);
   border-radius: 999px;
   display: flex;
   align-items: center;
   padding: 12px 14px 12px 18px;
   gap: 12px;
-  min-height: 72px;
-  box-shadow: inset 0 0 0 1px rgba(15, 76, 151, 0.05);
+  min-height: 74px;
+  box-shadow:
+    inset 0 0 0 1px rgba(15, 76, 151, 0.05),
+    0 12px 24px rgba(6, 27, 60, 0.12);
 }
 
 .search-input-wrapper .icon {
@@ -115,10 +138,10 @@
 }
 
 .search-button {
-  width: 52px;
-  height: 52px;
+  width: 56px;
+  height: 56px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #2f69c4, #1d4f9d);
+  background: linear-gradient(135deg, #3e77d1, #1d4f9d);
   color: var(--color-white);
   display: inline-flex;
   align-items: center;
@@ -141,6 +164,7 @@
   flex: 1;
   display: flex;
   flex-direction: column;
+  gap: 4px;
 }
 
 .filters-icons {
@@ -171,34 +195,120 @@
 }
 
 .filters-area select {
-  background-color: #ffffff;
-  border-radius: 999px;
-  padding: 16px 22px;
-  font-size: 1.05rem;
-  color: var(--color-text);
-  min-height: 60px;
-  box-shadow: inset 0 0 0 1px rgba(15, 76, 151, 0.05);
-  appearance: none;
-  -webkit-appearance: none;
-  -moz-appearance: none;
-  cursor: pointer;
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  pointer-events: none;
 }
 
 .filters-select-wrapper {
   position: relative;
+  border-radius: 999px;
+  overflow: visible;
 }
 
-.filters-select-wrapper::after {
-  content: "expand_more";
-  font-family: "Material Symbols Outlined";
-  position: absolute;
-  right: 18px;
-  top: 50%;
-  transform: translateY(-50%);
+.category-select-trigger {
+  width: 100%;
+  min-height: 64px;
+  border: 0;
+  border-radius: 999px;
+  background-color: rgba(255, 255, 255, 0.96);
+  padding: 14px 18px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  box-shadow: inset 0 0 0 1px rgba(15, 76, 151, 0.05);
+  color: var(--color-text);
+  cursor: pointer;
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.category-select-trigger:hover,
+.category-select-trigger:focus-visible {
+  transform: translateY(-1px);
+  box-shadow:
+    inset 0 0 0 1px rgba(15, 76, 151, 0.12),
+    0 10px 20px rgba(7, 35, 74, 0.14);
+}
+
+.category-select-trigger-icon {
+  font-size: 22px;
+  color: #205aad;
+}
+
+.category-select-trigger-label {
+  flex: 1;
+  text-align: left;
+  font-size: 1.05rem;
+  font-weight: 500;
+}
+
+.category-select-trigger-arrow {
   font-size: 24px;
   color: #444;
-  pointer-events: none;
+  transition: transform 0.22s ease, color 0.22s ease;
 }
+
+.filters-select-wrapper.is-open .category-select-trigger-arrow {
+  transform: rotate(180deg);
+  color: #205aad;
+}
+
+.category-select-dropdown {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(100% + 10px);
+  background: #ffffff;
+  border: 1px solid rgba(27, 86, 168, 0.18);
+  border-radius: 28px;
+  box-shadow:
+    0 24px 44px rgba(10, 36, 79, 0.24),
+    0 10px 20px rgba(10, 36, 79, 0.12);
+  padding: 12px;
+  transform-origin: top center;
+  animation: categoryDropdownIn 0.18s ease;
+  z-index: 30;
+}
+
+.category-select-dropdown[hidden] {
+  display: none;
+}
+
+.category-select-option {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  border-radius: 18px;
+  padding: 12px 16px;
+  text-align: left;
+  font-size: 1rem;
+  color: #18233a;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  transition: background-color 0.18s ease, color 0.18s ease, transform 0.18s ease;
+}
+
+.category-select-option:hover,
+.category-select-option:focus-visible {
+  background: #edf4ff;
+  color: #184d9a;
+  transform: translateX(2px);
+}
+
+.category-select-option.is-selected {
+  background: linear-gradient(135deg, #1f5cb3, #2f6fcc);
+  color: #ffffff;
+  box-shadow: 0 10px 18px rgba(31, 92, 179, 0.18);
+}
+
+.category-select-option.is-selected::after {
+  content: "check";
+  font-family: "Material Symbols Outlined";
+  font-size: 18px;
+}
+
 /* CATEGORIES */
 .categories-section {
   padding: 20px 0 10px;
@@ -475,6 +585,18 @@
 
 .product-card-button:hover {
   transform: translateY(-1px);
+}
+
+@keyframes categoryDropdownIn {
+  from {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 @keyframes searchResultsReveal {

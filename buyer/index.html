@@ -62,19 +62,34 @@
       <section class="hero-section">
         <div class="container">
           <div class="hero-card">
+            <div class="hero-background" aria-hidden="true">
+              <div class="hero-bg-slide is-active">
+                <img
+                  src="../assets/images/hero-slide-1.png"
+                  alt=""
+                />
+              </div>
+              <div class="hero-bg-slide">
+                <img
+                  src="../assets/images/hero-slide-2.png"
+                  alt=""
+                />
+              </div>
+              <div class="hero-bg-slide">
+                <img
+                  src="../assets/images/hero-slide-3.png"
+                  alt=""
+                />
+              </div>
+              <div class="hero-overlay"></div>
+            </div>
+
             <div class="hero-content">
               <h1>Busca lo que necesites</h1>
               <p>
                 Apoya a emprendedores universitarios o conviértete en uno,
                 todo con un click.
               </p>
-            </div>
-
-            <div class="hero-image">
-              <img
-                src="../assets/images/hero-cart.png"
-                alt="Carrito de compras Dale Click"
-              />
             </div>
           </div>
         </div>
@@ -122,10 +137,31 @@
                 </button>
               </div>
 
-              <div class="filters-select-wrapper">
+              <div class="filters-select-wrapper" id="category-select-wrapper">
                 <select id="category-filter" aria-label="Seleccionar categoría">
                   <option value="todas">Todas las categorías</option>
                 </select>
+
+                <button
+                  type="button"
+                  class="category-select-trigger"
+                  id="category-select-trigger"
+                  aria-haspopup="listbox"
+                  aria-expanded="false"
+                  aria-controls="category-select-dropdown"
+                >
+                  <span class="material-symbols-outlined category-select-trigger-icon" aria-hidden="true">grid_view</span>
+                  <span class="category-select-trigger-label" id="category-select-label">Todas las categorÃ­as</span>
+                  <span class="material-symbols-outlined category-select-trigger-arrow" aria-hidden="true">expand_more</span>
+                </button>
+
+                <div
+                  class="category-select-dropdown"
+                  id="category-select-dropdown"
+                  role="listbox"
+                  aria-label="Lista de categorÃ­as"
+                  hidden
+                ></div>
               </div>
             </div>
           </div>

@@ -160,18 +160,22 @@ document.addEventListener("DOMContentLoaded", () => {
     return searchTerm !== "" || selectedCategory !== "todas";
   }
 
+  function hasActiveSearchTerm() {
+    const searchTerm = normalizeText(searchInput ? searchInput.value : "");
+    return searchTerm !== "";
+  }
+
   function toggleCategoriesVisibility() {
     if (!categoriesSection) return;
 
-    categoriesSection.classList.toggle("is-hidden", hasActiveFilters());
+    categoriesSection.classList.toggle("is-hidden", hasActiveSearchTerm());
   }
 
   function setCategoryAndFilter(categoryValue) {
     if (!categoryFilter) return;
 
     categoryFilter.value = resolveCategoryValue(categoryValue);
-    filterProducts();
-    syncActiveCategoryCard(categoryFilter.value);
+    categoryFilter.dispatchEvent(new Event("change", { bubbles: true }));
   }
 
   function handleCategoryCardClick(event) {

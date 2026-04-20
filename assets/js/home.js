@@ -5,6 +5,34 @@ const DEFAULT_PRODUCTS_SECTION_TITLE = "Productos destacados";
 const DEFAULT_PRODUCTS_SECTION_DESCRIPTION =
   "Descubre opciones de emprendedores universitarios y negocios locales.";
 
+function initHeroCarousel() {
+  const slides = Array.from(document.querySelectorAll(".hero-bg-slide"));
+
+  if (slides.length === 0) return;
+
+  let currentIndex = 0;
+  let autoplayId = null;
+
+  const setActiveSlide = (index) => {
+    currentIndex = index;
+
+    slides.forEach((slide, slideIndex) => {
+      slide.classList.toggle("is-active", slideIndex === index);
+    });
+  };
+
+  const startAutoplay = () => {
+    window.clearInterval(autoplayId);
+    autoplayId = window.setInterval(() => {
+      const nextIndex = (currentIndex + 1) % slides.length;
+      setActiveSlide(nextIndex);
+    }, 4200);
+  };
+
+  setActiveSlide(0);
+  startAutoplay();
+}
+
 function updateProductsSectionCopy(hasActiveFilters, resultsCount) {
   const productsSection = document.getElementById("products-section");
   const title = document.getElementById("products-section-title");
@@ -68,6 +96,115 @@ function getImageUrl(product) {
   return "../assets/images/producto-default.jpg";
 }
 
+function syncCategoryDropdown() {
+  const categoryFilter = document.getElementById("category-filter");
+  const label = document.getElementById("category-select-label");
+  const dropdown = document.getElementById("category-select-dropdown");
+
+  if (!categoryFilter || !label || !dropdown) return;
+
+  const selectedOption = categoryFilter.options[categoryFilter.selectedIndex];
+  label.textContent = selectedOption?.textContent || "Todas las categorÃ­as";
+
+  dropdown.querySelectorAll(".category-select-option").forEach((option) => {
+    const isSelected = option.dataset.value === categoryFilter.value;
+    option.classList.toggle("is-selected", isSelected);
+    option.setAttribute("aria-selected", String(isSelected));
+  });
+}
+
+function buildCategoryDropdownOptions() {
+  const categoryFilter = document.getElementById("category-filter");
+  const dropdown = document.getElementById("category-select-dropdown");
+  const wrapper = document.getElementById("category-select-wrapper");
+  const trigger = document.getElementById("category-select-trigger");
+
+  if (!categoryFilter || !dropdown || !wrapper || !trigger) return;
+
+  dropdown.innerHTML = Array.from(categoryFilter.options)
+    .map((option) => {
+      const isSelected = option.value === categoryFilter.value;
+
+      return `
+        <button
+          type="button"
+          class="category-select-option${isSelected ? " is-selected" : ""}"
+          data-value="${escapeHtml(option.value)}"
+          role="option"
+          aria-selected="${isSelected ? "true" : "false"}"
+        >
+          ${escapeHtml(option.textContent || "")}
+        </button>
+      `;
+    })
+    .join("");
+
+  const closeDropdown = () => {
+    wrapper.classList.remove("is-open");
+    trigger.setAttribute("aria-expanded", "false");
+    dropdown.hidden = true;
+  };
+
+  dropdown.querySelectorAll(".category-select-option").forEach((button) => {
+    button.addEventListener("click", () => {
+      categoryFilter.value = button.dataset.value || "todas";
+      syncCategoryDropdown();
+      closeDropdown();
+      categoryFilter.dispatchEvent(new Event("change", { bubbles: true }));
+    });
+  });
+}
+
+function setupCategoryDropdown() {
+  const categoryFilter = document.getElementById("category-filter");
+  const dropdown = document.getElementById("category-select-dropdown");
+  const wrapper = document.getElementById("category-select-wrapper");
+  const trigger = document.getElementById("category-select-trigger");
+
+  if (!categoryFilter || !dropdown || !wrapper || !trigger) return;
+
+  const closeDropdown = () => {
+    wrapper.classList.remove("is-open");
+    trigger.setAttribute("aria-expanded", "false");
+    dropdown.hidden = true;
+  };
+
+  const openDropdown = () => {
+    dropdown.hidden = false;
+    wrapper.classList.add("is-open");
+    trigger.setAttribute("aria-expanded", "true");
+  };
+
+  if (wrapper.dataset.bound !== "true") {
+    trigger.addEventListener("click", () => {
+      if (wrapper.classList.contains("is-open")) {
+        closeDropdown();
+        return;
+      }
+
+      openDropdown();
+    });
+
+    document.addEventListener("click", (event) => {
+      if (!wrapper.contains(event.target)) {
+        closeDropdown();
+      }
+    });
+
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape") {
+        closeDropdown();
+      }
+    });
+
+    categoryFilter.addEventListener("change", syncCategoryDropdown);
+    wrapper.dataset.bound = "true";
+  }
+
+  buildCategoryDropdownOptions();
+  syncCategoryDropdown();
+}
+
 function populateCategoryFilter(categories) {
   const categoryFilter = document.getElementById("category-filter");
   if (!categoryFilter) return;
@@ -89,6 +226,7 @@ function populateCategoryFilter(categories) {
       .join("")}
   `;
 
+  setupCategoryDropdown();
   window.dispatchEvent(new Event("categoriesLoaded"));
 }
 
@@ -226,4 +364,7 @@ async function loadHomeData() {
   }
 }
 
-document.addEventListener("DOMContentLoaded", loadHomeData);
+document.addEventListener("DOMContentLoaded", () => {
+  initHeroCarousel();
+  loadHomeData();
+});

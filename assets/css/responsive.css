@@ -7,10 +7,6 @@
   .hero-content h1 {
     font-size: 3.4rem;
   }
-
-  .hero-image img {
-    width: 280px;
-  }
 }
 
 /* Tablet grande */
@@ -40,10 +36,6 @@
   .hero-content p {
     font-size: 1.15rem;
     max-width: 100%;
-  }
-
-  .hero-image {
-    align-self: center;
   }
 
   .search-card {
@@ -117,10 +109,6 @@
 
   .hero-content p {
     font-size: 1rem;
-  }
-
-  .hero-image img {
-    width: 220px;
   }
 
   .search-section {
@@ -206,10 +194,6 @@
   .hero-content p {
     font-size: 0.95rem;
     max-width: 100%;
-  }
-
-  .hero-image img {
-    width: 170px;
   }
 
   .search-section {
