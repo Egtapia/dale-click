@@ -81,11 +81,7 @@
 /* Tablet pequeña */
 @media (max-width: 768px) {
   html {
-    scroll-padding-top: 112px;
-  }
-
-  main {
-    padding-top: 112px;
+    scroll-padding-top: 120px;
   }
 
   .main-header {
@@ -182,11 +178,7 @@
 /* Móvil */
 @media (max-width: 576px) {
   html {
-    scroll-padding-top: 132px;
-  }
-
-  main {
-    padding-top: 132px;
+    scroll-padding-top: 144px;
   }
 
   .container {

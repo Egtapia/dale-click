@@ -7,7 +7,7 @@
 
 html {
   scroll-behavior: smooth;
-  scroll-padding-top: 82px;
+  scroll-padding-top: 96px;
 }
 
 body {
@@ -69,7 +69,6 @@ ol {
 /* Main ocupa espacio restante */
 main {
   flex: 1;
-  padding-top: 82px;
 }
 
 /* Botones reutilizables */

@@ -1,9 +1,7 @@
 /* HEADER */
 .main-header {
-  position: fixed;
+  position: sticky;
   top: 0;
-  left: 0;
-  width: 100%;
   z-index: 1000;
   padding: 10px 0 8px;
   background-color: rgba(250, 247, 240, 0.96);
