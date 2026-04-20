@@ -41,6 +41,8 @@ export async function getAllBusinesses(req, res) {
         b.referenceNote,
         b.status,
         sp.studentProfileID,
+        sp.universityID,
+        u.universityName,
         (
           SELECT c.categoryName
           FROM Products p
@@ -51,6 +53,7 @@ export async function getAllBusinesses(req, res) {
         ) AS categoryName
       FROM BusinessProfiles b
       LEFT JOIN StudentProfiles sp ON b.userID = sp.userID
+      LEFT JOIN Universities u ON sp.universityID = u.universityID
       ORDER BY b.businessName ASC
     `);
 
@@ -66,8 +69,8 @@ export async function getAllBusinesses(req, res) {
         location: business.city || "Ubicación no disponible",
         locationValue: normalizeLocationValue(business.city),
         type,
-        universityName: "",
-        universityValue: "",
+        universityName: business.universityName || "",
+        universityValue: normalizeUniversityValue(business.universityName),
         logoURL: business.logoURL || "../assets/images/logo-seller-default.png",
         contactPhone: business.contactPhone || "Sin contacto"
       };
@@ -106,6 +109,8 @@ export async function getBusinessById(req, res) {
         b.referenceNote,
         b.status,
         sp.studentProfileID,
+        sp.universityID,
+        u.universityName,
         (
           SELECT c.categoryName
           FROM Products p
@@ -116,6 +121,7 @@ export async function getBusinessById(req, res) {
         ) AS categoryName
       FROM BusinessProfiles b
       LEFT JOIN StudentProfiles sp ON b.userID = sp.userID
+      LEFT JOIN Universities u ON sp.universityID = u.universityID
       WHERE b.businessID = ?
       LIMIT 1
       `,
@@ -190,7 +196,8 @@ export async function getBusinessById(req, res) {
         status: business.status,
         category: business.categoryName || "Sin categoría",
         type: businessType,
-        universityName: ""
+        universityName: business.universityName || "",
+        universityValue: normalizeUniversityValue(business.universityName)
       },
       hours: hoursRows.map((item) => ({
         businessHourID: item.businessHourID,

@@ -102,6 +102,126 @@
   font-size: 1rem;
 }
 
+.sellers-custom-select select {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.sellers-custom-select {
+  position: relative;
+  border-radius: 999px;
+  overflow: visible;
+}
+
+.category-select-trigger {
+  width: 100%;
+  min-height: 58px;
+  border: 0;
+  border-radius: 999px;
+  background-color: #f8f7f3;
+  padding: 14px 18px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  box-shadow: inset 0 0 0 1px rgba(15, 76, 151, 0.08);
+  color: var(--color-text);
+  cursor: pointer;
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.category-select-trigger:hover,
+.category-select-trigger:focus-visible {
+  transform: translateY(-1px);
+  box-shadow:
+    inset 0 0 0 1px rgba(15, 76, 151, 0.14),
+    0 10px 20px rgba(7, 35, 74, 0.12);
+}
+
+.category-select-trigger-icon {
+  font-size: 22px;
+  color: #205aad;
+}
+
+.category-select-trigger-label {
+  flex: 1;
+  text-align: left;
+  font-size: 1rem;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.category-select-trigger-arrow {
+  font-size: 24px;
+  color: #444;
+  transition: transform 0.22s ease, color 0.22s ease;
+}
+
+.filters-select-wrapper.is-open .category-select-trigger-arrow {
+  transform: rotate(180deg);
+  color: #205aad;
+}
+
+.category-select-dropdown {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(100% + 10px);
+  background: #ffffff;
+  border: 1px solid rgba(27, 86, 168, 0.18);
+  border-radius: 28px;
+  box-shadow:
+    0 24px 44px rgba(10, 36, 79, 0.24),
+    0 10px 20px rgba(10, 36, 79, 0.12);
+  padding: 12px;
+  transform-origin: top center;
+  animation: categoryDropdownIn 0.18s ease;
+  z-index: 30;
+  max-height: 420px;
+  overflow-y: auto;
+}
+
+.category-select-dropdown[hidden] {
+  display: none;
+}
+
+.category-select-option {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  border-radius: 18px;
+  padding: 12px 16px;
+  text-align: left;
+  font-size: 1rem;
+  color: #18233a;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  transition: background-color 0.18s ease, color 0.18s ease, transform 0.18s ease;
+}
+
+.category-select-option:hover,
+.category-select-option:focus-visible {
+  background: #edf4ff;
+  color: #184d9a;
+  transform: translateX(2px);
+}
+
+.category-select-option.is-selected {
+  background: linear-gradient(135deg, #1f5cb3, #2f6fcc);
+  color: #ffffff;
+  box-shadow: 0 10px 18px rgba(31, 92, 179, 0.18);
+}
+
+.category-select-option.is-selected::after {
+  content: "check";
+  font-family: "Material Symbols Outlined";
+  font-size: 18px;
+}
+
 .sellers-results-section {
   padding: 14px 0 34px;
 }
@@ -324,5 +444,17 @@
 
   .seller-body {
     padding: 40px 18px 18px;
+  }
+}
+
+@keyframes categoryDropdownIn {
+  from {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
   }
 }

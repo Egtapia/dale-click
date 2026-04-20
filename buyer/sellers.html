@@ -117,14 +117,31 @@
                 Universidad
               </label>
 
-              <div class="filters-select-wrapper">
+              <div class="filters-select-wrapper sellers-custom-select" id="sellers-university-select-wrapper">
                 <select id="sellers-university-filter" aria-label="Filtrar por universidad">
                   <option value="todas">Todas</option>
-                  <option value="keiser-managua">Keiser University Latin American Campus (Managua)</option>
-                  <option value="keiser-san-marcos">Keiser University Latin American Campus (San Marcos)</option>
-                  <option value="uam">UAM</option>
-                  <option value="uni">UNI</option>
                 </select>
+
+                <button
+                  type="button"
+                  class="category-select-trigger"
+                  id="sellers-university-select-trigger"
+                  aria-haspopup="listbox"
+                  aria-expanded="false"
+                  aria-controls="sellers-university-select-dropdown"
+                >
+                  <span class="material-symbols-outlined category-select-trigger-icon" aria-hidden="true">account_balance</span>
+                  <span class="category-select-trigger-label" id="sellers-university-select-label">Todas</span>
+                  <span class="material-symbols-outlined category-select-trigger-arrow" aria-hidden="true">expand_more</span>
+                </button>
+
+                <div
+                  class="category-select-dropdown"
+                  id="sellers-university-select-dropdown"
+                  role="listbox"
+                  aria-label="Lista de universidades"
+                  hidden
+                ></div>
               </div>
             </div>
 
@@ -133,13 +150,31 @@
                 Ubicación
               </label>
 
-              <div class="filters-select-wrapper">
+              <div class="filters-select-wrapper sellers-custom-select" id="sellers-location-select-wrapper">
                 <select id="sellers-location-filter" aria-label="Filtrar por ubicación">
                   <option value="todas">Todas las ubicaciones</option>
-                  <option value="san-marcos">San Marcos</option>
-                  <option value="managua">Managua</option>
-                  <option value="esquipulas">Esquipulas</option>
                 </select>
+
+                <button
+                  type="button"
+                  class="category-select-trigger"
+                  id="sellers-location-select-trigger"
+                  aria-haspopup="listbox"
+                  aria-expanded="false"
+                  aria-controls="sellers-location-select-dropdown"
+                >
+                  <span class="material-symbols-outlined category-select-trigger-icon" aria-hidden="true">location_on</span>
+                  <span class="category-select-trigger-label" id="sellers-location-select-label">Todas las ubicaciones</span>
+                  <span class="material-symbols-outlined category-select-trigger-arrow" aria-hidden="true">expand_more</span>
+                </button>
+
+                <div
+                  class="category-select-dropdown"
+                  id="sellers-location-select-dropdown"
+                  role="listbox"
+                  aria-label="Lista de ubicaciones"
+                  hidden
+                ></div>
               </div>
             </div>
           </div>

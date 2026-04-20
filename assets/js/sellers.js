@@ -130,6 +130,185 @@ document.addEventListener("DOMContentLoaded", () => {
     resultsCount.textContent = `${sellers.length} emprendedor${sellers.length !== 1 ? "es" : ""} encontrado${sellers.length !== 1 ? "s" : ""}`;
   }
 
+  function sortOptionLabels(a, b) {
+    return a.label.localeCompare(b.label, "es", { sensitivity: "base" });
+  }
+
+  function populateFilterOptions(selectElement, defaultOption, options) {
+    if (!selectElement) return;
+
+    const previousValue = selectElement.value;
+    const markup = [defaultOption]
+      .concat(
+        options.map(
+          (option) => `<option value="${escapeHtml(option.value)}">${escapeHtml(option.label)}</option>`
+        )
+      )
+      .join("");
+
+    selectElement.innerHTML = markup;
+
+    const hasPreviousValue = options.some((option) => option.value === previousValue);
+    selectElement.value = hasPreviousValue ? previousValue : defaultOption.value;
+  }
+
+  function syncCustomSelect(selectElement, labelElement, dropdownElement) {
+    if (!selectElement || !labelElement || !dropdownElement) return;
+
+    const selectedOption = selectElement.options[selectElement.selectedIndex];
+    labelElement.textContent = selectedOption?.textContent || "";
+
+    dropdownElement.querySelectorAll(".category-select-option").forEach((option) => {
+      const isSelected = option.dataset.value === selectElement.value;
+      option.classList.toggle("is-selected", isSelected);
+      option.setAttribute("aria-selected", String(isSelected));
+    });
+  }
+
+  function setupCustomSelect(config) {
+    const {
+      selectElement,
+      wrapperElement,
+      triggerElement,
+      labelElement,
+      dropdownElement
+    } = config;
+
+    if (!selectElement || !wrapperElement || !triggerElement || !labelElement || !dropdownElement) {
+      return;
+    }
+
+    dropdownElement.innerHTML = Array.from(selectElement.options)
+      .map((option) => {
+        const isSelected = option.value === selectElement.value;
+
+        return `
+          <button
+            type="button"
+            class="category-select-option${isSelected ? " is-selected" : ""}"
+            data-value="${escapeHtml(option.value)}"
+            role="option"
+            aria-selected="${isSelected ? "true" : "false"}"
+          >
+            ${escapeHtml(option.textContent || "")}
+          </button>
+        `;
+      })
+      .join("");
+
+    const closeDropdown = () => {
+      wrapperElement.classList.remove("is-open");
+      triggerElement.setAttribute("aria-expanded", "false");
+      dropdownElement.hidden = true;
+    };
+
+    dropdownElement.querySelectorAll(".category-select-option").forEach((button) => {
+      button.addEventListener("click", () => {
+        selectElement.value = button.dataset.value || selectElement.value;
+        syncCustomSelect(selectElement, labelElement, dropdownElement);
+        closeDropdown();
+        selectElement.dispatchEvent(new Event("change", { bubbles: true }));
+      });
+    });
+
+    if (wrapperElement.dataset.bound !== "true") {
+      triggerElement.addEventListener("click", () => {
+        const isOpen = wrapperElement.classList.contains("is-open");
+
+        document.querySelectorAll(".sellers-custom-select.is-open").forEach((item) => {
+          item.classList.remove("is-open");
+          const itemTrigger = item.querySelector(".category-select-trigger");
+          const itemDropdown = item.querySelector(".category-select-dropdown");
+
+          if (itemTrigger) itemTrigger.setAttribute("aria-expanded", "false");
+          if (itemDropdown) itemDropdown.hidden = true;
+        });
+
+        if (isOpen) return;
+
+        dropdownElement.hidden = false;
+        wrapperElement.classList.add("is-open");
+        triggerElement.setAttribute("aria-expanded", "true");
+      });
+
+      document.addEventListener("click", (event) => {
+        if (!wrapperElement.contains(event.target)) {
+          closeDropdown();
+        }
+      });
+
+      document.addEventListener("keydown", (event) => {
+        if (event.key === "Escape") {
+          closeDropdown();
+        }
+      });
+
+      selectElement.addEventListener("change", () => {
+        syncCustomSelect(selectElement, labelElement, dropdownElement);
+      });
+
+      wrapperElement.dataset.bound = "true";
+    }
+
+    syncCustomSelect(selectElement, labelElement, dropdownElement);
+  }
+
+  function syncCustomDropdowns() {
+    setupCustomSelect({
+      selectElement: universityFilter,
+      wrapperElement: document.getElementById("sellers-university-select-wrapper"),
+      triggerElement: document.getElementById("sellers-university-select-trigger"),
+      labelElement: document.getElementById("sellers-university-select-label"),
+      dropdownElement: document.getElementById("sellers-university-select-dropdown")
+    });
+
+    setupCustomSelect({
+      selectElement: locationFilter,
+      wrapperElement: document.getElementById("sellers-location-select-wrapper"),
+      triggerElement: document.getElementById("sellers-location-select-trigger"),
+      labelElement: document.getElementById("sellers-location-select-label"),
+      dropdownElement: document.getElementById("sellers-location-select-dropdown")
+    });
+  }
+
+  function syncFilterOptions(sellers) {
+    const universityOptions = sellers
+      .filter((seller) => seller.type === "universitario" && seller.universityName && seller.universityValue)
+      .map((seller) => ({
+        value: seller.universityValue,
+        label: seller.universityName
+      }))
+      .filter(
+        (option, index, collection) =>
+          collection.findIndex((item) => item.value === option.value) === index
+      )
+      .sort(sortOptionLabels);
+
+    const locationOptions = sellers
+      .filter((seller) => seller.location && seller.locationValue)
+      .map((seller) => ({
+        value: seller.locationValue,
+        label: seller.location
+      }))
+      .filter(
+        (option, index, collection) =>
+          collection.findIndex((item) => item.value === option.value) === index
+      )
+      .sort(sortOptionLabels);
+
+    populateFilterOptions(universityFilter, {
+      value: "todas",
+      label: "Todas"
+    }, universityOptions);
+
+    populateFilterOptions(locationFilter, {
+      value: "todas",
+      label: "Todas las ubicaciones"
+    }, locationOptions);
+
+    syncCustomDropdowns();
+  }
+
   function applyFilters() {
     const searchTerm = normalizeText(searchInput?.value);
     const selectedType = normalizeText(typeFilter?.value);
@@ -191,6 +370,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       allSellers = data.businesses;
+      syncFilterOptions(allSellers);
       applyFilters();
     } catch (error) {
       console.error("Error cargando emprendedores:", error);
@@ -208,5 +388,6 @@ document.addEventListener("DOMContentLoaded", () => {
   universityFilter?.addEventListener("change", applyFilters);
   locationFilter?.addEventListener("change", applyFilters);
 
+  syncCustomDropdowns();
   loadBusinesses();
 });
