@@ -54,7 +54,7 @@ export async function getAllProducts(req, res) {
           SELECT pi.imageURL
           FROM ProductImages pi
           WHERE pi.productID = p.productID
-          ORDER BY pi.imageID ASC
+          ORDER BY pi.imageID DESC
           LIMIT 1
         ) AS imageURL
       FROM Products p
@@ -144,15 +144,22 @@ export async function getProductById(req, res) {
       SELECT imageID, imageURL
       FROM ProductImages
       WHERE productID = ?
-      ORDER BY imageID ASC
+      ORDER BY imageID DESC
       `,
       [id]
     );
 
+    const primaryImageURL =
+      images.find((image) => image?.imageURL && String(image.imageURL).trim() !== "")?.imageURL ||
+      rows[0].imageURL;
+
     return res.json({
       ok: true,
       product: {
-        ...mapProduct(rows[0]),
+        ...mapProduct({
+          ...rows[0],
+          imageURL: primaryImageURL
+        }),
         images
       }
     });

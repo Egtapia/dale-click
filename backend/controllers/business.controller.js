@@ -197,7 +197,7 @@ export async function getBusinessById(req, res) {
           SELECT pi.imageURL
           FROM ProductImages pi
           WHERE pi.productID = p.productID
-          ORDER BY pi.imageID ASC
+          ORDER BY pi.imageID DESC
           LIMIT 1
         ) AS imageURL
       FROM Products p

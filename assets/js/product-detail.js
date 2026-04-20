@@ -20,6 +20,12 @@ function safeText(value, fallback = "-") {
   return value && String(value).trim() ? String(value).trim() : fallback;
 }
 
+function getValidImageUrl(url) {
+  return url && String(url).trim() !== ""
+    ? String(url).trim()
+    : "../assets/images/producto-default.jpg";
+}
+
 function getSession() {
   const raw = localStorage.getItem("daleclick_session");
   if (!raw) return null;
@@ -130,7 +136,7 @@ function renderWalletBox(productPrice) {
   `;
 }
 
-function renderGallery(images, productName) {
+function renderGallery(images, productName, preferredImageUrl) {
   const thumbsContainer = document.getElementById("product-thumbnails");
   const mainImage = document.getElementById("product-main-image");
 
@@ -138,22 +144,42 @@ function renderGallery(images, productName) {
 
   thumbsContainer.innerHTML = "";
 
-  const imageList = Array.isArray(images) && images.length
-    ? images
-    : [{ imageURL: "../assets/images/producto-default.jpg" }];
+  const uniqueImages = [];
+  const seenUrls = new Set();
 
-  mainImage.src = imageList[0].imageURL || "../assets/images/producto-default.jpg";
+  const addImage = (url) => {
+    const resolvedUrl = getValidImageUrl(url);
+
+    if (seenUrls.has(resolvedUrl)) return;
+
+    seenUrls.add(resolvedUrl);
+    uniqueImages.push({ imageURL: resolvedUrl });
+  };
+
+  addImage(preferredImageUrl);
+
+  if (Array.isArray(images)) {
+    images.forEach((image) => addImage(image?.imageURL));
+  }
+
+  if (uniqueImages.length === 0) {
+    addImage("");
+  }
+
+  const imageList = uniqueImages;
+
+  mainImage.src = imageList[0].imageURL;
   mainImage.alt = productName || "Producto";
 
   imageList.forEach((image, index) => {
     const button = document.createElement("button");
     button.type = "button";
     button.className = `product-detail-thumb ${index === 0 ? "active" : ""}`;
-    button.setAttribute("data-image", image.imageURL || "../assets/images/producto-default.jpg");
+    button.setAttribute("data-image", image.imageURL);
 
     button.innerHTML = `
       <img
-        src="${image.imageURL || "../assets/images/producto-default.jpg"}"
+        src="${image.imageURL}"
         alt="${productName} ${index + 1}"
         onerror="this.src='../assets/images/producto-default.jpg'"
       />
@@ -402,7 +428,7 @@ function renderProductDetail(product) {
     </div>
   `;
 
-  renderGallery(product.images, product.productName);
+  renderGallery(product.images, product.productName, product.imageURL);
   bindReserveButton(product);
 }
 

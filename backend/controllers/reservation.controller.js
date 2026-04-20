@@ -164,6 +164,7 @@ export const getMyReservations = async (req, res) => {
           SELECT pi.imageURL
           FROM ProductImages pi
           WHERE pi.productID = p.productID
+          ORDER BY pi.imageID DESC
           LIMIT 1
         ) AS imageURL
       FROM Orders o
