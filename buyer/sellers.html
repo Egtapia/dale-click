@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Dale Click | Emprendedores</title>
 
-  <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link
@@ -13,13 +12,11 @@
     rel="stylesheet"
   />
 
-  <!-- Google Icons -->
   <link
     rel="stylesheet"
     href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0"
   />
 
-  <!-- CSS -->
   <link rel="stylesheet" href="../assets/css/variables.css" />
   <link rel="stylesheet" href="../assets/css/global.css" />
   <link rel="stylesheet" href="../assets/css/layout.css" />
@@ -29,7 +26,6 @@
 </head>
 <body>
   <div class="page-wrapper">
-    <!-- HEADER -->
     <header class="main-header">
       <div class="container header-container">
         <a href="./index.html" class="logo-link">
@@ -44,7 +40,9 @@
           <ul class="nav-list">
             <li><a href="./index.html" class="nav-link">Inicio</a></li>
             <li><a href="./discounts.html" class="nav-link">Descuentos</a></li>
-            <li><a href="./sellers.html" class="nav-link active">Emprendedores</a></li>
+            <li><a href="./sellers.html?view=local" class="nav-link nav-link-pill" data-sellers-view-link="local">Negocios locales</a></li>
+            <li><a href="./sellers.html?view=universities" class="nav-link nav-link-pill" data-sellers-view-link="universities">Universidades</a></li>
+            <li><a href="./index.html#reviews-section" class="nav-link">Reseñas</a></li>
           </ul>
         </nav>
 
@@ -55,16 +53,14 @@
       </div>
     </header>
 
-    <!-- MAIN -->
     <main>
-      <!-- HERO -->
       <section class="sellers-hero-section">
         <div class="container">
           <div class="sellers-hero-card">
             <div class="sellers-hero-content">
-              <p class="sellers-hero-badge">Emprendedores Dale Click</p>
-              <h1>Descubre negocios y emprendimientos</h1>
-              <p>
+              <p class="sellers-hero-badge" id="sellers-hero-badge">Emprendedores Dale Click</p>
+              <h1 id="sellers-hero-title">Descubre negocios y emprendimientos</h1>
+              <p id="sellers-hero-description">
                 Conoce marcas, tiendas y emprendimientos universitarios que forman
                 parte de Dale Click. Explora sus perfiles, sus categorías disponibles
                 y sus productos.
@@ -72,17 +68,16 @@
             </div>
 
             <div class="sellers-hero-icon">
-              <span class="material-symbols-outlined">storefront</span>
+              <span class="material-symbols-outlined" id="sellers-hero-icon">storefront</span>
             </div>
           </div>
         </div>
       </section>
 
-      <!-- FILTROS -->
       <section class="sellers-toolbar-section">
         <div class="container">
           <div class="sellers-toolbar">
-            <div class="sellers-search-area">
+            <div class="sellers-search-area" id="sellers-search-area">
               <label for="sellers-search-input" class="toolbar-label">
                 Buscar emprendedor
               </label>
@@ -98,75 +93,7 @@
               </div>
             </div>
 
-            <div class="sellers-filter-area">
-              <label for="sellers-type-filter" class="toolbar-label">
-                Tipo de emprendimiento
-              </label>
-
-              <div class="filters-select-wrapper sellers-custom-select" id="sellers-type-select-wrapper">
-                <select id="sellers-type-filter" aria-label="Filtrar por tipo de emprendimiento">
-                  <option value="todos">Todos</option>
-                  <option value="universitario">Emprendimiento universitario</option>
-                  <option value="local">Negocio local</option>
-                </select>
-
-                <button
-                  type="button"
-                  class="category-select-trigger"
-                  id="sellers-type-select-trigger"
-                  aria-haspopup="listbox"
-                  aria-expanded="false"
-                  aria-controls="sellers-type-select-dropdown"
-                >
-                  <span class="material-symbols-outlined category-select-trigger-icon" aria-hidden="true">storefront</span>
-                  <span class="category-select-trigger-label" id="sellers-type-select-label">Todos</span>
-                  <span class="material-symbols-outlined category-select-trigger-arrow" aria-hidden="true">expand_more</span>
-                </button>
-
-                <div
-                  class="category-select-dropdown"
-                  id="sellers-type-select-dropdown"
-                  role="listbox"
-                  aria-label="Tipos de emprendimiento"
-                  hidden
-                ></div>
-              </div>
-            </div>
-
-            <div class="sellers-filter-area">
-              <label for="sellers-university-filter" class="toolbar-label">
-                Universidad
-              </label>
-
-              <div class="filters-select-wrapper sellers-custom-select" id="sellers-university-select-wrapper">
-                <select id="sellers-university-filter" aria-label="Filtrar por universidad">
-                  <option value="todas">Todas</option>
-                </select>
-
-                <button
-                  type="button"
-                  class="category-select-trigger"
-                  id="sellers-university-select-trigger"
-                  aria-haspopup="listbox"
-                  aria-expanded="false"
-                  aria-controls="sellers-university-select-dropdown"
-                >
-                  <span class="material-symbols-outlined category-select-trigger-icon" aria-hidden="true">account_balance</span>
-                  <span class="category-select-trigger-label" id="sellers-university-select-label">Todas</span>
-                  <span class="material-symbols-outlined category-select-trigger-arrow" aria-hidden="true">expand_more</span>
-                </button>
-
-                <div
-                  class="category-select-dropdown"
-                  id="sellers-university-select-dropdown"
-                  role="listbox"
-                  aria-label="Lista de universidades"
-                  hidden
-                ></div>
-              </div>
-            </div>
-
-            <div class="sellers-filter-area">
+            <div class="sellers-filter-area" id="sellers-location-area">
               <label for="sellers-location-filter" class="toolbar-label">
                 Ubicación
               </label>
@@ -198,16 +125,27 @@
                 ></div>
               </div>
             </div>
+
+            <div class="sellers-selected-university" id="sellers-selected-university" hidden>
+              <a href="./sellers.html?view=universities" class="sellers-back-link" id="sellers-back-link">
+                <span class="material-symbols-outlined">arrow_back</span>
+                Volver a universidades
+              </a>
+
+              <div class="sellers-selected-university-copy">
+                <p>Universidad seleccionada</p>
+                <strong id="sellers-selected-university-name">-</strong>
+              </div>
+            </div>
           </div>
         </div>
       </section>
 
-      <!-- RESULTADOS -->
       <section class="sellers-results-section">
         <div class="container">
           <div class="sellers-results-header">
             <div>
-              <h2>Emprendedores disponibles</h2>
+              <h2 id="sellers-results-title">Emprendedores disponibles</h2>
               <p id="sellers-results-count">Cargando emprendedores...</p>
             </div>
           </div>
@@ -221,7 +159,6 @@
       </section>
     </main>
 
-    <!-- FOOTER -->
     <footer class="main-footer">
       <div class="container footer-container">
         <h2 class="footer-title">

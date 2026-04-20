@@ -64,7 +64,7 @@
 
 .sellers-toolbar {
   display: grid;
-  grid-template-columns: 2fr 1fr 1fr 1fr;
+  grid-template-columns: minmax(0, 2fr) minmax(280px, 1fr);
   gap: 18px;
   background-color: var(--color-white);
   border-radius: 24px;
@@ -78,6 +78,11 @@
   font-weight: 600;
   color: var(--color-accent);
   margin-bottom: 10px;
+}
+
+.sellers-search-area,
+.sellers-filter-area {
+  min-width: 0;
 }
 
 .sellers-search-wrapper {
@@ -137,14 +142,6 @@
   box-shadow:
     inset 0 0 0 1px rgba(15, 76, 151, 0.14),
     0 10px 20px rgba(7, 35, 74, 0.12);
-}
-
-.sellers-custom-select.is-disabled .category-select-trigger,
-.category-select-trigger:disabled {
-  opacity: 0.58;
-  cursor: not-allowed;
-  transform: none;
-  box-shadow: inset 0 0 0 1px rgba(15, 76, 151, 0.08);
 }
 
 .category-select-trigger-icon {
@@ -228,6 +225,45 @@
   content: "check";
   font-family: "Material Symbols Outlined";
   font-size: 18px;
+}
+
+.sellers-selected-university {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 18px 20px;
+  border-radius: 22px;
+  background: linear-gradient(135deg, #eef5ff, #f8fbff);
+  border: 1px solid rgba(15, 76, 151, 0.08);
+}
+
+.sellers-selected-university[hidden] {
+  display: none;
+}
+
+.sellers-back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 16px;
+  border-radius: 999px;
+  background-color: var(--color-white);
+  color: var(--color-primary);
+  font-weight: 600;
+  box-shadow: 0 8px 18px rgba(15, 76, 151, 0.08);
+}
+
+.sellers-selected-university-copy p {
+  font-size: 0.85rem;
+  color: var(--color-text-light);
+  margin-bottom: 4px;
+}
+
+.sellers-selected-university-copy strong {
+  font-size: 1.05rem;
+  color: var(--color-accent);
 }
 
 .sellers-results-section {
@@ -377,6 +413,82 @@
   justify-content: flex-end;
 }
 
+.university-card {
+  background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+  border-radius: 24px;
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.07);
+  border: 1px solid rgba(15, 76, 151, 0.08);
+  padding: 28px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  transition: transform 0.28s ease, box-shadow 0.28s ease, border-color 0.28s ease;
+  color: var(--color-text);
+}
+
+.university-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 18px 30px rgba(15, 76, 151, 0.14);
+  border-color: rgba(15, 76, 151, 0.18);
+}
+
+.university-card-logo-wrap {
+  width: 100%;
+  min-height: 180px;
+  border-radius: 22px;
+  background: linear-gradient(135deg, #e8f1ff, #d7e6ff);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.university-card-logo {
+  width: 100%;
+  max-width: 220px;
+  max-height: 112px;
+  object-fit: contain;
+}
+
+.university-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.university-card-label {
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-primary);
+}
+
+.university-card-name {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--color-accent);
+  line-height: 1.2;
+}
+
+.university-card-meta {
+  font-size: 0.98rem;
+  color: var(--color-text-light);
+}
+
+.university-card-action {
+  margin-top: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+  color: var(--color-primary);
+}
+
+.university-card-action .material-symbols-outlined {
+  font-size: 20px;
+}
+
 .sellers-message-card {
   grid-column: 1 / -1;
   background-color: #fffaf2;
@@ -390,7 +502,7 @@
 
 @media (max-width: 1200px) {
   .sellers-toolbar {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr;
   }
 }
 
@@ -427,12 +539,13 @@
     font-size: 1.7rem;
   }
 
-  .sellers-toolbar {
+  .sellers-grid {
     grid-template-columns: 1fr;
   }
 
-  .sellers-grid {
-    grid-template-columns: 1fr;
+  .sellers-selected-university {
+    flex-direction: column;
+    align-items: flex-start;
   }
 }
 
@@ -452,6 +565,10 @@
 
   .seller-body {
     padding: 40px 18px 18px;
+  }
+
+  .university-card {
+    padding: 22px 18px;
   }
 }
 

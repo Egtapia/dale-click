@@ -10,6 +10,10 @@ function sanitizeServerIdentifier(value) {
   return sanitizeServerText(value).replace(/\s+/g, " ");
 }
 
+function looksLikeBcryptHash(value) {
+  return /^\$2[aby]\$\d{2}\$/.test(String(value || ""));
+}
+
 export async function register(req, res) {
   try {
     const firstName = sanitizeServerText(req.body.firstName);
@@ -104,7 +108,26 @@ export async function login(req, res) {
     }
 
     const user = rows[0];
-    const isValidPassword = await bcrypt.compare(password, user.password);
+    let isValidPassword = false;
+
+    if (looksLikeBcryptHash(user.password)) {
+      isValidPassword = await bcrypt.compare(password, user.password);
+    } else {
+      isValidPassword = password === sanitizeServerText(user.password);
+
+      if (isValidPassword) {
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+        await pool.query(
+          `
+          UPDATE Users
+          SET password = ?
+          WHERE userID = ?
+          `,
+          [hashedPassword, user.userID]
+        );
+      }
+    }
 
     if (!isValidPassword) {
       return res.status(401).json({

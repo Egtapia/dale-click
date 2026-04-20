@@ -42,12 +42,12 @@
 
           <article class="auth-feature-item">
             <span class="material-symbols-outlined">person</span>
-            <span>Administra tu informacion personal</span>
+            <span>Mantén tu perfil y datos siempre a la mano</span>
           </article>
 
           <article class="auth-feature-item">
             <span class="material-symbols-outlined">verified_user</span>
-            <span>El acceso final debe validarse siempre en el servidor</span>
+            <span>Compra con una experiencia pensada para ti</span>
           </article>
         </div>
       </div>
@@ -55,8 +55,21 @@
 
     <section class="auth-panel auth-panel-form">
       <div class="auth-form-card">
-        <h2>Iniciar sesion</h2>
-        <p class="auth-subtitle">Ingresa con tu cuenta de comprador.</p>
+        <div class="auth-form-intro">
+          <span class="auth-form-kicker">Cuenta de comprador</span>
+          <h2>Iniciar sesion</h2>
+          <p class="auth-subtitle">Ingresa para continuar con tus compras, reservas y pedidos.</p>
+        </div>
+
+        <div class="auth-form-highlight" aria-hidden="true">
+          <div class="auth-highlight-icon">
+            <span class="material-symbols-outlined">shopping_bag</span>
+          </div>
+          <div>
+            <strong>Tu espacio Dale Click</strong>
+            <p>Un acceso simple para retomar lo que dejaste pendiente.</p>
+          </div>
+        </div>
 
         <form id="login-form" class="auth-form" novalidate>
           <div class="form-group">
@@ -72,7 +85,7 @@
           </div>
 
           <div class="form-group password-group">
-            <label for="password">Contrasena</label>
+            <label for="password">Contraseña</label>
             <div class="password-input-wrap">
               <input
                 type="password"
@@ -87,14 +100,6 @@
                 <span class="material-symbols-outlined">visibility</span>
               </button>
             </div>
-          </div>
-
-          <div class="auth-note">
-            <span class="material-symbols-outlined">shield_lock</span>
-            <p>
-              Este acceso visual es temporal para pruebas. Mas adelante se conectara
-              con validacion real, hash de contrasenas y sesion segura en backend.
-            </p>
           </div>
 
           <div id="login-message" class="auth-message" aria-live="polite"></div>

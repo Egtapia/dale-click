@@ -20,6 +20,30 @@ function normalizeUniversityValue(name) {
   return value.replace(/\s+/g, "-");
 }
 
+const UNIVERSITY_LOGO_FALLBACKS = {
+  "unan-managua": "https://www.google.com/s2/favicons?sz=256&domain_url=https://www.unan.edu.ni",
+  uni: "https://www.google.com/s2/favicons?sz=256&domain_url=https://www.uni.edu.ni",
+  una: "https://www.google.com/s2/favicons?sz=256&domain_url=https://www.una.edu.ni",
+  uam: "https://www.google.com/s2/favicons?sz=256&domain_url=https://www.uam.edu.ni",
+  ucc: "https://www.google.com/s2/favicons?sz=256&domain_url=https://www.ucc.edu.ni",
+  ucn: "https://www.google.com/s2/favicons?sz=256&domain_url=https://www.ucn.edu.ni",
+  unicit: "https://www.google.com/s2/favicons?sz=256&domain_url=https://www.unicit.edu.ni",
+  udem: "https://www.google.com/s2/favicons?sz=256&domain_url=https://www.udem.edu.ni",
+  unm: "https://www.google.com/s2/favicons?sz=256&domain_url=https://www.unm.edu.ni",
+  "keiser-university": "https://www.google.com/s2/favicons?sz=256&domain_url=https://keiseruniversity.edu.ni",
+  "keiser-managua": "https://www.google.com/s2/favicons?sz=256&domain_url=https://keiseruniversity.edu.ni",
+  "keiser-san-marcos": "https://www.google.com/s2/favicons?sz=256&domain_url=https://keiseruniversity.edu.ni"
+};
+
+function resolveUniversityLogoUrl(name, logoUrl) {
+  if (logoUrl && String(logoUrl).trim() !== "") {
+    return logoUrl;
+  }
+
+  const universityValue = normalizeUniversityValue(name);
+  return UNIVERSITY_LOGO_FALLBACKS[universityValue] || "";
+}
+
 function normalizeLocationValue(city) {
   return normalizeText(city).replace(/\s+/g, "-");
 }
@@ -43,6 +67,7 @@ export async function getAllBusinesses(req, res) {
         sp.studentProfileID,
         sp.universityID,
         u.universityName,
+        u.logoURL AS universityLogoURL,
         (
           SELECT c.categoryName
           FROM Products p
@@ -71,6 +96,10 @@ export async function getAllBusinesses(req, res) {
         type,
         universityName: business.universityName || "",
         universityValue: normalizeUniversityValue(business.universityName),
+        universityLogoURL: resolveUniversityLogoUrl(
+          business.universityName,
+          business.universityLogoURL
+        ),
         logoURL: business.logoURL || "../assets/images/logo-seller-default.png",
         contactPhone: business.contactPhone || "Sin contacto"
       };
@@ -111,6 +140,7 @@ export async function getBusinessById(req, res) {
         sp.studentProfileID,
         sp.universityID,
         u.universityName,
+        u.logoURL AS universityLogoURL,
         (
           SELECT c.categoryName
           FROM Products p
@@ -197,7 +227,11 @@ export async function getBusinessById(req, res) {
         category: business.categoryName || "Sin categoría",
         type: businessType,
         universityName: business.universityName || "",
-        universityValue: normalizeUniversityValue(business.universityName)
+        universityValue: normalizeUniversityValue(business.universityName),
+        universityLogoURL: resolveUniversityLogoUrl(
+          business.universityName,
+          business.universityLogoURL
+        )
       },
       hours: hoursRows.map((item) => ({
         businessHourID: item.businessHourID,

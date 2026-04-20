@@ -7,6 +7,7 @@ const DEFAULT_PRODUCTS_SECTION_DESCRIPTION =
 
 function initHeroCarousel() {
   const slides = Array.from(document.querySelectorAll(".hero-bg-slide"));
+  const indicators = Array.from(document.querySelectorAll(".hero-slide-indicator"));
 
   if (slides.length === 0) return;
 
@@ -19,6 +20,11 @@ function initHeroCarousel() {
     slides.forEach((slide, slideIndex) => {
       slide.classList.toggle("is-active", slideIndex === index);
     });
+
+    indicators.forEach((indicator, indicatorIndex) => {
+      indicator.classList.toggle("is-active", indicatorIndex === index);
+      indicator.setAttribute("aria-pressed", String(indicatorIndex === index));
+    });
   };
 
   const startAutoplay = () => {
@@ -28,6 +34,13 @@ function initHeroCarousel() {
       setActiveSlide(nextIndex);
     }, 4200);
   };
+
+  indicators.forEach((indicator, index) => {
+    indicator.addEventListener("click", () => {
+      setActiveSlide(index);
+      startAutoplay();
+    });
+  });
 
   setActiveSlide(0);
   startAutoplay();

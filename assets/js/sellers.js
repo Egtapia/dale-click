@@ -1,15 +1,26 @@
 document.addEventListener("DOMContentLoaded", () => {
   const sellersGrid = document.getElementById("sellers-grid");
   const searchInput = document.getElementById("sellers-search-input");
-  const typeFilter = document.getElementById("sellers-type-filter");
-  const universityFilter = document.getElementById("sellers-university-filter");
   const locationFilter = document.getElementById("sellers-location-filter");
   const noResultsMessage = document.getElementById("sellers-no-results");
   const resultsCount = document.getElementById("sellers-results-count");
+  const resultsTitle = document.getElementById("sellers-results-title");
+  const heroBadge = document.getElementById("sellers-hero-badge");
+  const heroTitle = document.getElementById("sellers-hero-title");
+  const heroDescription = document.getElementById("sellers-hero-description");
+  const heroIcon = document.getElementById("sellers-hero-icon");
+  const toolbarSection = document.querySelector(".sellers-toolbar-section");
+  const searchArea = document.getElementById("sellers-search-area");
+  const locationArea = document.getElementById("sellers-location-area");
+  const selectedUniversityCard = document.getElementById("sellers-selected-university");
+  const selectedUniversityName = document.getElementById("sellers-selected-university-name");
+  const backLink = document.getElementById("sellers-back-link");
+  const viewLinks = document.querySelectorAll("[data-sellers-view-link]");
 
   if (!sellersGrid) return;
 
   const API_BASE = "http://localhost:3001/api/businesses";
+  const DEFAULT_LOGO = "../assets/images/logo-seller-default.png";
   let allSellers = [];
 
   function normalizeText(text) {
@@ -30,10 +41,27 @@ document.addEventListener("DOMContentLoaded", () => {
       .replace(/'/g, "&#039;");
   }
 
-  function getLogoUrl(seller) {
-    return seller.logoURL && seller.logoURL.trim() !== ""
-      ? seller.logoURL
-      : "../assets/images/logo-seller-default.png";
+  function getLogoUrl(value) {
+    return value && String(value).trim() !== "" ? value : DEFAULT_LOGO;
+  }
+
+  function getStateFromUrl() {
+    const params = new URLSearchParams(window.location.search);
+    const rawView = normalizeText(params.get("view"));
+    const view = rawView === "universities" ? "universities" : "local";
+
+    return {
+      view,
+      university: normalizeText(params.get("university"))
+    };
+  }
+
+  function updateViewLinkState(view) {
+    viewLinks.forEach((link) => {
+      const isActive = link.dataset.sellersViewLink === view;
+      link.classList.toggle("active", isActive);
+      link.setAttribute("aria-current", isActive ? "page" : "false");
+    });
   }
 
   function getTypeBadge(seller) {
@@ -72,7 +100,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const category = escapeHtml(seller.category || "General");
     const location = escapeHtml(seller.location || "Ubicación no disponible");
     const contactPhone = escapeHtml(seller.contactPhone || "Sin contacto");
-    const logoURL = escapeHtml(getLogoUrl(seller));
+    const logoURL = escapeHtml(getLogoUrl(seller.logoURL));
     const detailUrl = `./seller-profile.html?id=${encodeURIComponent(businessID)}`;
 
     return `
@@ -82,7 +110,7 @@ document.addEventListener("DOMContentLoaded", () => {
             src="${logoURL}"
             alt="${businessName}"
             class="seller-logo"
-            onerror="this.src='../assets/images/logo-seller-default.png'"
+            onerror="this.src='${DEFAULT_LOGO}'"
           />
         </div>
 
@@ -117,10 +145,91 @@ document.addEventListener("DOMContentLoaded", () => {
     `;
   }
 
-  function renderSellers(sellers) {
+  function buildUniversityGroups(sellers) {
+    const groups = new Map();
+
+    sellers
+      .filter((seller) => seller.type === "universitario" && seller.universityName && seller.universityValue)
+      .forEach((seller) => {
+        const key = seller.universityValue;
+        const current = groups.get(key);
+
+        if (current) {
+          current.count += 1;
+          if (
+            seller.universityLogoURL &&
+            (!current.logoURL || current.logoURL === DEFAULT_LOGO)
+          ) {
+            current.logoURL = seller.universityLogoURL;
+          }
+          return;
+        }
+
+        groups.set(key, {
+          value: seller.universityValue,
+          name: seller.universityName,
+          logoURL: seller.universityLogoURL || DEFAULT_LOGO,
+          count: 1
+        });
+      });
+
+    return Array.from(groups.values()).sort((a, b) =>
+      a.name.localeCompare(b.name, "es", { sensitivity: "base" })
+    );
+  }
+
+  function renderUniversityCards(universities) {
+    if (!Array.isArray(universities) || universities.length === 0) {
+      sellersGrid.innerHTML = "";
+      noResultsMessage.style.display = "block";
+      noResultsMessage.textContent = "No encontramos universidades con emprendimientos activos.";
+      resultsCount.textContent = "0 universidades encontradas";
+      return;
+    }
+
+    sellersGrid.innerHTML = universities
+      .map((university) => {
+        const logoURL = escapeHtml(getLogoUrl(university.logoURL));
+        const name = escapeHtml(university.name);
+        const detailUrl = `./sellers.html?view=universities&university=${encodeURIComponent(university.value)}`;
+
+        return `
+          <a href="${detailUrl}" class="university-card">
+            <div class="university-card-logo-wrap">
+              <img
+                src="${logoURL}"
+                alt="${name}"
+                class="university-card-logo"
+                onerror="this.src='${DEFAULT_LOGO}'"
+              />
+            </div>
+
+            <div class="university-card-body">
+              <p class="university-card-label">Universidad</p>
+              <h3 class="university-card-name">${name}</h3>
+              <p class="university-card-meta">
+                ${university.count} emprendimiento${university.count !== 1 ? "s" : ""} disponible${university.count !== 1 ? "s" : ""}
+              </p>
+            </div>
+
+            <span class="university-card-action">
+              Ver emprendimientos
+              <span class="material-symbols-outlined">arrow_forward</span>
+            </span>
+          </a>
+        `;
+      })
+      .join("");
+
+    noResultsMessage.style.display = "none";
+    resultsCount.textContent = `${universities.length} universidad${universities.length !== 1 ? "es" : ""} encontrada${universities.length !== 1 ? "s" : ""}`;
+  }
+
+  function renderSellerCards(sellers, emptyMessage) {
     if (!Array.isArray(sellers) || sellers.length === 0) {
       sellersGrid.innerHTML = "";
       noResultsMessage.style.display = "block";
+      noResultsMessage.textContent = emptyMessage;
       resultsCount.textContent = "0 emprendedores encontrados";
       return;
     }
@@ -134,11 +243,23 @@ document.addEventListener("DOMContentLoaded", () => {
     return a.label.localeCompare(b.label, "es", { sensitivity: "base" });
   }
 
-  function populateFilterOptions(selectElement, defaultOption, options) {
-    if (!selectElement) return;
+  function populateLocationOptions(sellers) {
+    if (!locationFilter) return;
 
-    const previousValue = selectElement.value;
-    const markup = [defaultOption]
+    const previousValue = locationFilter.value;
+    const options = sellers
+      .filter((seller) => seller.location && seller.locationValue)
+      .map((seller) => ({
+        value: seller.locationValue,
+        label: seller.location
+      }))
+      .filter(
+        (option, index, collection) =>
+          collection.findIndex((item) => item.value === option.value) === index
+      )
+      .sort(sortOptionLabels);
+
+    locationFilter.innerHTML = [`<option value="todas">Todas las ubicaciones</option>`]
       .concat(
         options.map(
           (option) => `<option value="${escapeHtml(option.value)}">${escapeHtml(option.label)}</option>`
@@ -146,10 +267,11 @@ document.addEventListener("DOMContentLoaded", () => {
       )
       .join("");
 
-    selectElement.innerHTML = markup;
+    locationFilter.value = options.some((option) => option.value === previousValue)
+      ? previousValue
+      : "todas";
 
-    const hasPreviousValue = options.some((option) => option.value === previousValue);
-    selectElement.value = hasPreviousValue ? previousValue : defaultOption.value;
+    syncCustomDropdowns();
   }
 
   function syncCustomSelect(selectElement, labelElement, dropdownElement) {
@@ -174,21 +296,6 @@ document.addEventListener("DOMContentLoaded", () => {
       if (itemTrigger) itemTrigger.setAttribute("aria-expanded", "false");
       if (itemDropdown) itemDropdown.hidden = true;
     });
-  }
-
-  function setCustomSelectDisabled(wrapperElement, triggerElement, isDisabled) {
-    if (!wrapperElement || !triggerElement) return;
-
-    wrapperElement.classList.toggle("is-disabled", isDisabled);
-    triggerElement.disabled = isDisabled;
-
-    if (isDisabled) {
-      wrapperElement.classList.remove("is-open");
-      triggerElement.setAttribute("aria-expanded", "false");
-
-      const dropdownElement = wrapperElement.querySelector(".category-select-dropdown");
-      if (dropdownElement) dropdownElement.hidden = true;
-    }
   }
 
   function setupCustomSelect(config) {
@@ -239,8 +346,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (wrapperElement.dataset.bound !== "true") {
       triggerElement.addEventListener("click", () => {
-        if (triggerElement.disabled) return;
-
         const isOpen = wrapperElement.classList.contains("is-open");
 
         closeAllCustomDropdowns();
@@ -276,22 +381,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function syncCustomDropdowns() {
     setupCustomSelect({
-      selectElement: typeFilter,
-      wrapperElement: document.getElementById("sellers-type-select-wrapper"),
-      triggerElement: document.getElementById("sellers-type-select-trigger"),
-      labelElement: document.getElementById("sellers-type-select-label"),
-      dropdownElement: document.getElementById("sellers-type-select-dropdown")
-    });
-
-    setupCustomSelect({
-      selectElement: universityFilter,
-      wrapperElement: document.getElementById("sellers-university-select-wrapper"),
-      triggerElement: document.getElementById("sellers-university-select-trigger"),
-      labelElement: document.getElementById("sellers-university-select-label"),
-      dropdownElement: document.getElementById("sellers-university-select-dropdown")
-    });
-
-    setupCustomSelect({
       selectElement: locationFilter,
       wrapperElement: document.getElementById("sellers-location-select-wrapper"),
       triggerElement: document.getElementById("sellers-location-select-trigger"),
@@ -300,125 +389,114 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  function syncFilterOptions(sellers) {
-    const selectedType = normalizeText(typeFilter?.value || "todos");
-    const selectedUniversity = normalizeText(universityFilter?.value || "todas");
-    const selectedLocation = normalizeText(locationFilter?.value || "todas");
-
-    if (selectedType !== "universitario" && universityFilter && universityFilter.value !== "todas") {
-      universityFilter.value = "todas";
+  function updateHero(state, university) {
+    if (state.view === "universities" && university) {
+      heroBadge.textContent = "Emprendimientos universitarios";
+      heroTitle.textContent = `Emprendimientos de ${university.name}`;
+      heroDescription.textContent = "Explora los emprendimientos registrados en esta universidad y mantén la búsqueda enfocada solo en ese campus.";
+      heroIcon.textContent = "school";
+      return;
     }
 
-    const universitySource = sellers.filter(
-      (seller) => seller.type === "universitario" && seller.universityName && seller.universityValue
-    );
-
-    const universityOptions = universitySource
-      .filter((seller) => selectedType === "todos" || normalizeText(seller.type) === selectedType)
-      .filter((seller) => seller.type === "universitario" && seller.universityName && seller.universityValue)
-      .map((seller) => ({
-        value: seller.universityValue,
-        label: seller.universityName
-      }))
-      .filter(
-        (option, index, collection) =>
-          collection.findIndex((item) => item.value === option.value) === index
-      )
-      .sort(sortOptionLabels);
-
-    const effectiveUniversity = selectedType === "universitario"
-      ? normalizeText(universityFilter?.value || "todas")
-      : "todas";
-
-    const locationSource = sellers.filter((seller) => {
-      const matchesType = selectedType === "todos" || normalizeText(seller.type) === selectedType;
-      const matchesUniversity = effectiveUniversity === "todas"
-        || normalizeText(seller.universityValue) === effectiveUniversity;
-
-      return matchesType && matchesUniversity;
-    });
-
-    const locationOptions = locationSource
-      .filter((seller) => seller.location && seller.locationValue)
-      .map((seller) => ({
-        value: seller.locationValue,
-        label: seller.location
-      }))
-      .filter(
-        (option, index, collection) =>
-          collection.findIndex((item) => item.value === option.value) === index
-      )
-      .sort(sortOptionLabels);
-
-    populateFilterOptions(universityFilter, {
-      value: "todas",
-      label: "Todas"
-    }, universityOptions);
-
-    populateFilterOptions(locationFilter, {
-      value: "todas",
-      label: "Todas las ubicaciones"
-    }, locationOptions);
-
-    syncCustomDropdowns();
-
-    setCustomSelectDisabled(
-      document.getElementById("sellers-university-select-wrapper"),
-      document.getElementById("sellers-university-select-trigger"),
-      selectedType === "local"
-    );
-
-    const activeUniversity = normalizeText(universityFilter?.value || "todas");
-    const activeLocation = normalizeText(locationFilter?.value || "todas");
-    const hasUniversityOption = universityOptions.some((option) => normalizeText(option.value) === activeUniversity);
-    const hasLocationOption = locationOptions.some((option) => normalizeText(option.value) === activeLocation);
-
-    if (universityFilter && activeUniversity !== "todas" && !hasUniversityOption) {
-      universityFilter.value = "todas";
-      syncCustomDropdowns();
+    if (state.view === "universities") {
+      heroBadge.textContent = "Universidades Dale Click";
+      heroTitle.textContent = "Explora universidades y sus emprendimientos";
+      heroDescription.textContent = "Selecciona el logo de una universidad para ver todos los emprendimientos que forman parte de ella.";
+      heroIcon.textContent = "account_balance";
+      return;
     }
 
-    if (locationFilter && activeLocation !== "todas" && !hasLocationOption) {
-      locationFilter.value = "todas";
-      syncCustomDropdowns();
+    heroBadge.textContent = "Negocios locales";
+    heroTitle.textContent = "Descubre negocios locales";
+    heroDescription.textContent = "Encuentra negocios locales por nombre o ubicación, manteniendo separados los emprendimientos universitarios.";
+    heroIcon.textContent = "storefront";
+  }
+
+  function updateToolbar(state, university) {
+    const isLocalView = state.view === "local";
+    const isUniversityDetail = state.view === "universities" && university;
+
+    if (toolbarSection) {
+      toolbarSection.hidden = state.view === "universities" && !university;
+    }
+
+    searchArea.hidden = state.view === "universities" && !university;
+    locationArea.hidden = !isLocalView;
+    selectedUniversityCard.hidden = !isUniversityDetail;
+
+    if (searchInput) {
+      searchInput.placeholder = isUniversityDetail
+        ? "Escribe el nombre del emprendimiento"
+        : "Escribe el nombre del negocio";
+    }
+
+    if (selectedUniversityName) {
+      selectedUniversityName.textContent = university?.name || "-";
+    }
+
+    if (backLink) {
+      backLink.href = "./sellers.html?view=universities";
     }
   }
 
-  function applyFilters() {
-    syncFilterOptions(allSellers);
+  function applyView() {
+    const state = getStateFromUrl();
+    const localSellers = allSellers.filter((seller) => seller.type === "local");
+    const universities = buildUniversityGroups(allSellers);
+    const selectedUniversity = universities.find(
+      (item) => normalizeText(item.value) === state.university
+    );
+
+    if (state.view === "universities" && state.university && !selectedUniversity) {
+      window.history.replaceState({}, "", "./sellers.html?view=universities");
+      applyView();
+      return;
+    }
 
     const searchTerm = normalizeText(searchInput?.value);
-    const selectedType = normalizeText(typeFilter?.value);
-    const selectedUniversity = normalizeText(universityFilter?.value);
-    const selectedLocation = normalizeText(locationFilter?.value);
+    const selectedLocation = normalizeText(locationFilter?.value || "todas");
 
-    let filteredSellers = [...allSellers];
+    updateViewLinkState(state.view);
+    updateHero(state, selectedUniversity);
+    updateToolbar(state, selectedUniversity);
 
-    if (searchTerm) {
-      filteredSellers = filteredSellers.filter((seller) =>
-        normalizeText(seller.businessName).includes(searchTerm)
+    if (state.view === "local") {
+      populateLocationOptions(localSellers);
+
+      const filteredLocalSellers = localSellers
+        .filter((seller) =>
+          !searchTerm || normalizeText(seller.businessName).includes(searchTerm)
+        )
+        .filter((seller) =>
+          selectedLocation === "todas" || normalizeText(seller.locationValue) === selectedLocation
+        );
+
+      resultsTitle.textContent = "Negocios locales disponibles";
+      renderSellerCards(
+        filteredLocalSellers,
+        "No encontramos negocios locales con esa búsqueda o ubicación."
       );
+      return;
     }
 
-    if (selectedType && selectedType !== "todos") {
-      filteredSellers = filteredSellers.filter(
-        (seller) => normalizeText(seller.type) === selectedType
-      );
+    if (!selectedUniversity) {
+      resultsTitle.textContent = "Universidades disponibles";
+      renderUniversityCards(universities);
+      return;
     }
 
-    if (selectedUniversity && selectedUniversity !== "todas") {
-      filteredSellers = filteredSellers.filter(
-        (seller) => normalizeText(seller.universityValue) === selectedUniversity
+    const filteredUniversitySellers = allSellers
+      .filter((seller) => seller.type === "universitario")
+      .filter((seller) => normalizeText(seller.universityValue) === selectedUniversity.value)
+      .filter((seller) =>
+        !searchTerm || normalizeText(seller.businessName).includes(searchTerm)
       );
-    }
 
-    if (selectedLocation && selectedLocation !== "todas") {
-      filteredSellers = filteredSellers.filter(
-        (seller) => normalizeText(seller.locationValue) === selectedLocation
-      );
-    }
-
-    renderSellers(filteredSellers);
+    resultsTitle.textContent = `Emprendimientos de ${selectedUniversity.name}`;
+    renderSellerCards(
+      filteredUniversitySellers,
+      "No encontramos emprendedores en esta universidad con esa búsqueda."
+    );
   }
 
   function renderLoadingState() {
@@ -447,8 +525,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       allSellers = data.businesses;
-      syncFilterOptions(allSellers);
-      applyFilters();
+      applyView();
     } catch (error) {
       console.error("Error cargando emprendedores:", error);
       sellersGrid.innerHTML = `
@@ -460,10 +537,9 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  searchInput?.addEventListener("input", applyFilters);
-  typeFilter?.addEventListener("change", applyFilters);
-  universityFilter?.addEventListener("change", applyFilters);
-  locationFilter?.addEventListener("change", applyFilters);
+  searchInput?.addEventListener("input", applyView);
+  locationFilter?.addEventListener("change", applyView);
+  window.addEventListener("popstate", applyView);
 
   syncCustomDropdowns();
   loadBusinesses();
