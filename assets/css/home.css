@@ -202,6 +202,11 @@
 /* CATEGORIES */
 .categories-section {
   padding: 20px 0 10px;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.categories-section.is-hidden {
+  display: none;
 }
 
 .categories-header {
@@ -288,6 +293,18 @@
 /* PRODUCTS */
 .products-section {
   padding: 46px 0 34px;
+}
+
+.products-section.is-searching .products-header h2 {
+  color: #0f4c97;
+}
+
+.products-section.is-searching .products-header p {
+  color: #4b5a73;
+}
+
+.products-section.is-searching .products-grid {
+  animation: searchResultsReveal 0.28s ease;
 }
 
 .products-grid {
@@ -458,6 +475,18 @@
 
 .product-card-button:hover {
   transform: translateY(-1px);
+}
+
+@keyframes searchResultsReveal {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* REVIEWS */

@@ -3,6 +3,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const categoryFilter = document.getElementById("category-filter");
   const searchButton = document.querySelector(".search-button");
   const noResultsMessage = document.getElementById("no-results-message");
+  const categoriesSection = document.getElementById("categories-section");
   const categoryCards = document.querySelectorAll(".category-card");
 
   function normalizeText(text) {
@@ -109,6 +110,7 @@ document.addEventListener("DOMContentLoaded", () => {
   function filterProducts() {
     if (typeof window.applyHomeFilters === "function") {
       window.applyHomeFilters();
+      toggleCategoriesVisibility();
       return;
     }
 
@@ -148,6 +150,20 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     showNoResults(visibleCount === 0);
+    toggleCategoriesVisibility();
+  }
+
+  function hasActiveFilters() {
+    const searchTerm = normalizeText(searchInput ? searchInput.value : "");
+    const selectedCategory = normalizeText(categoryFilter ? categoryFilter.value : "todas");
+
+    return searchTerm !== "" || selectedCategory !== "todas";
+  }
+
+  function toggleCategoriesVisibility() {
+    if (!categoriesSection) return;
+
+    categoriesSection.classList.toggle("is-hidden", hasActiveFilters());
   }
 
   function setCategoryAndFilter(categoryValue) {

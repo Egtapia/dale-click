@@ -1,6 +1,37 @@
 const PRODUCTS_API_URL = "http://localhost:3001/api/products";
 const CATEGORIES_API_URL = "http://localhost:3001/api/products/categories";
 let allHomeProducts = [];
+const DEFAULT_PRODUCTS_SECTION_TITLE = "Productos destacados";
+const DEFAULT_PRODUCTS_SECTION_DESCRIPTION =
+  "Descubre opciones de emprendedores universitarios y negocios locales.";
+
+function updateProductsSectionCopy(hasActiveFilters, resultsCount) {
+  const productsSection = document.getElementById("products-section");
+  const title = document.getElementById("products-section-title");
+  const description = document.getElementById("products-section-description");
+
+  if (!productsSection || !title || !description) return;
+
+  productsSection.classList.toggle("is-searching", hasActiveFilters);
+
+  if (!hasActiveFilters) {
+    title.textContent = DEFAULT_PRODUCTS_SECTION_TITLE;
+    description.textContent = DEFAULT_PRODUCTS_SECTION_DESCRIPTION;
+    return;
+  }
+
+  title.textContent = "Resultados de tu búsqueda";
+
+  if (resultsCount === 0) {
+    description.textContent = "No encontramos coincidencias con los filtros seleccionados.";
+    return;
+  }
+
+  description.textContent =
+    resultsCount === 1
+      ? "Encontramos 1 producto que coincide con tu búsqueda."
+      : `Encontramos ${resultsCount} productos que coinciden con tu búsqueda.`;
+}
 
 function escapeHtml(text) {
   return String(text ?? "")
@@ -152,6 +183,7 @@ function applyHomeFilters() {
   const filteredProducts = getFilteredHomeProducts();
   const shouldLimitResults = searchTerm === "" && selectedCategory === "todas";
 
+  updateProductsSectionCopy(!shouldLimitResults, filteredProducts.length);
   renderProducts(filteredProducts, shouldLimitResults ? 12 : filteredProducts.length);
 }
 
