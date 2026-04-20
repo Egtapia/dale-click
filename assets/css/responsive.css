@@ -80,12 +80,20 @@
 
 /* Tablet pequeña */
 @media (max-width: 768px) {
+  html {
+    scroll-padding-top: 112px;
+  }
+
+  main {
+    padding-top: 112px;
+  }
+
   .main-header {
-    padding: 20px 0 14px;
+    padding: 10px 0 8px;
   }
 
   .logo {
-    width: 140px;
+    width: 120px;
   }
 
   .header-actions {
@@ -100,7 +108,7 @@
   }
 
   .nav-link {
-    font-size: 1.05rem;
+    font-size: 1rem;
   }
 
   .hero-card {
@@ -173,6 +181,14 @@
 
 /* Móvil */
 @media (max-width: 576px) {
+  html {
+    scroll-padding-top: 132px;
+  }
+
+  main {
+    padding-top: 132px;
+  }
+
   .container {
     padding-left: 14px;
     padding-right: 14px;

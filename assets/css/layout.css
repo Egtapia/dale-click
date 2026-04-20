@@ -1,13 +1,21 @@
 /* HEADER */
 .main-header {
-  padding: 28px 0 20px;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 1000;
+  padding: 10px 0 8px;
+  background-color: rgba(250, 247, 240, 0.96);
+  box-shadow: 0 6px 16px rgba(15, 34, 64, 0.05);
+  backdrop-filter: blur(10px);
 }
 
 .header-container {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 24px;
+  gap: 16px;
 }
 
 .logo-link {
@@ -16,7 +24,7 @@
 }
 
 .logo {
-  width: 165px;
+  width: 128px;
   height: auto;
   object-fit: contain;
 }
@@ -30,11 +38,11 @@
 .nav-list {
   display: flex;
   align-items: center;
-  gap: 42px;
+  gap: 34px;
 }
 
 .nav-link {
-  font-size: 1.2rem;
+  font-size: 1.08rem;
   font-weight: 500;
   color: var(--color-text);
   transition: var(--transition-fast);
@@ -48,7 +56,12 @@
 .header-actions {
   display: flex;
   align-items: center;
-  gap: 18px;
+  gap: 14px;
+}
+
+.header-actions .btn {
+  padding: 9px 18px;
+  font-size: 0.98rem;
 }
 
 /* FOOTER */
