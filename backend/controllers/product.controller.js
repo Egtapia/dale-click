@@ -119,6 +119,8 @@ export async function getProductById(req, res) {
         b.businessName,
         b.contactPhone,
         b.contactEmail,
+        b.instagram,
+        b.tiktok,
         b.city,
         b.department,
         c.categoryID,

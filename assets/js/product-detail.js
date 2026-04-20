@@ -35,6 +35,70 @@ function getValidImageUrl(url) {
     : "../assets/images/producto-default.jpg";
 }
 
+function normalizeUrl(value, baseUrl = "") {
+  const text = String(value || "").trim();
+  if (!text) return "";
+  if (/^https?:\/\//i.test(text)) return text;
+  return baseUrl ? `${baseUrl}${text.replace(/^@+/, "")}` : text;
+}
+
+function getWhatsAppUrl(phone) {
+  const digits = String(phone || "").replace(/\D/g, "");
+  if (!digits) return "";
+
+  const phoneWithCountryCode = digits.length === 8 ? `505${digits}` : digits;
+  return `https://wa.me/${phoneWithCountryCode}`;
+}
+
+function getBusinessSocialLinks(entity) {
+  return [
+    {
+      label: "WhatsApp",
+      icon: "chat",
+      url: getWhatsAppUrl(entity?.contactPhone),
+      className: "whatsapp"
+    },
+    {
+      label: "Instagram",
+      icon: "photo_camera",
+      url: normalizeUrl(entity?.instagram, "https://www.instagram.com/"),
+      className: "instagram"
+    },
+    {
+      label: "TikTok",
+      icon: "music_note",
+      url: normalizeUrl(entity?.tiktok, "https://www.tiktok.com/@"),
+      className: "tiktok"
+    }
+  ].filter((item) => item.url);
+}
+
+function renderBusinessSocialLinks(entity, emptyMessage = "") {
+  const links = getBusinessSocialLinks(entity);
+
+  if (!links.length) {
+    return emptyMessage
+      ? `<p class="business-social-empty">${escapeHtml(emptyMessage)}</p>`
+      : "";
+  }
+
+  return `
+    <div class="business-social-links">
+      ${links.map((link) => `
+        <a
+          href="${escapeHtml(link.url)}"
+          class="business-social-link ${escapeHtml(link.className)}"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <span class="material-symbols-outlined">${escapeHtml(link.icon)}</span>
+          ${escapeHtml(link.label)}
+        </a>
+      `).join("")}
+    </div>
+  `;
+}
+
 function getSession() {
   const raw = localStorage.getItem("daleclick_session");
   if (!raw) return null;
@@ -475,28 +539,6 @@ function renderProductDetail(product) {
           </span>
         </div>
 
-        <div class="product-detail-panels">
-          <div class="product-detail-panel">
-            <h3>Información del producto</h3>
-            <ul>
-              <li><strong>Categoría:</strong> ${safeText(product.categoryName)}</li>
-              <li><strong>Disponibilidad:</strong> ${safeText(product.availabilityStatus, "Disponible")}</li>
-              <li><strong>Stock estimado:</strong> ${safeText(product.stock)}</li>
-            </ul>
-          </div>
-
-          <div class="product-detail-panel">
-            <h3>Información del emprendimiento</h3>
-            <ul>
-              <li><strong>Negocio:</strong> ${safeText(product.businessName)}</li>
-              <li><strong>Teléfono:</strong> ${safeText(product.contactPhone)}</li>
-              <li><strong>Correo:</strong> ${safeText(product.contactEmail)}</li>
-            </ul>
-          </div>
-
-          ${renderWalletBox(product.price)}
-        </div>
-
         <div class="product-detail-actions">
           <button
             class="btn btn-small product-detail-primary-btn"
@@ -523,11 +565,42 @@ function renderProductDetail(product) {
             Volver
           </button>
         </div>
+
+        <div class="product-detail-socials">
+          <p class="product-detail-socials-title">Contacta al emprendimiento</p>
+          ${renderBusinessSocialLinks(product, "Este emprendimiento aún no tiene redes sociales publicadas.")}
+        </div>
+
+        <div class="product-detail-panels">
+          <div class="product-detail-panel">
+            <h3>Información del producto</h3>
+            <ul>
+              <li><strong>Categoría:</strong> ${safeText(product.categoryName)}</li>
+              <li><strong>Disponibilidad:</strong> ${safeText(product.availabilityStatus, "Disponible")}</li>
+              <li><strong>Stock estimado:</strong> ${safeText(product.stock)}</li>
+            </ul>
+          </div>
+
+          <div class="product-detail-panel">
+            <h3>Información del emprendimiento</h3>
+            <ul>
+              <li><strong>Negocio:</strong> ${safeText(product.businessName)}</li>
+              <li><strong>Teléfono:</strong> ${safeText(product.contactPhone)}</li>
+              <li><strong>Correo:</strong> ${safeText(product.contactEmail)}</li>
+            </ul>
+          </div>
+
+          ${renderWalletBox(product.price)}
+        </div>
+
       </div>
     </div>
   `;
 
   renderGallery(product.images, product.productName, product.imageURL);
+  container
+    .querySelector(".product-detail-panels > .product-detail-panel:nth-child(2):not(.wallet-panel)")
+    ?.remove();
   bindReserveButton(product);
 }
 

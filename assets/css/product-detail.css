@@ -1,5 +1,5 @@
 .product-detail-section {
-  padding: 10px 0 18px;
+  padding: 10px 0 20px;
 }
 
 .product-detail-card {
@@ -17,23 +17,24 @@
 }
 
 .product-detail-body {
-  padding: 34px;
+  padding: 28px;
   display: grid;
-  grid-template-columns: 1.15fr 1fr;
-  gap: 32px;
+  grid-template-columns: minmax(0, 1.04fr) minmax(360px, 0.96fr);
+  gap: 24px;
+  align-items: start;
 }
 
 .product-detail-gallery {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 14px;
 }
 
 .product-detail-image-wrapper {
   background: linear-gradient(180deg, #f7f2e9 0%, #eee8de 100%);
-  border-radius: 28px;
+  border-radius: 26px;
   overflow: hidden;
-  min-height: 460px;
+  min-height: 380px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -41,20 +42,20 @@
 
 .product-detail-image {
   width: 100%;
-  height: 460px;
+  height: 380px;
   object-fit: cover;
 }
 
 .product-detail-thumbs {
   display: flex;
-  gap: 12px;
+  gap: 10px;
   flex-wrap: wrap;
 }
 
 .product-detail-thumb {
-  width: 84px;
-  height: 84px;
-  border-radius: 18px;
+  width: 76px;
+  height: 76px;
+  border-radius: 16px;
   overflow: hidden;
   border: 2px solid transparent;
   background-color: #f8f7f3;
@@ -76,13 +77,13 @@
 .product-detail-info {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 12px;
 }
 
 .product-detail-badges {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
+  gap: 8px;
 }
 
 .product-detail-badge {
@@ -110,29 +111,31 @@
 }
 
 .product-detail-title {
-  font-size: 2.5rem;
+  font-size: clamp(2.2rem, 3vw, 2.9rem);
   font-weight: 800;
   color: var(--color-accent);
-  line-height: 1.08;
+  line-height: 1.02;
+  letter-spacing: -0.03em;
 }
 
 .product-detail-price {
-  font-size: 2.2rem;
+  font-size: clamp(2rem, 2.6vw, 2.5rem);
   font-weight: 800;
   color: var(--color-text);
-  letter-spacing: -0.5px;
+  letter-spacing: -0.03em;
 }
 
 .product-detail-description {
-  font-size: 1rem;
-  line-height: 1.65;
+  font-size: 0.98rem;
+  line-height: 1.55;
   color: var(--color-text-light);
+  max-width: 54ch;
 }
 
 .product-detail-meta {
   display: flex;
   flex-wrap: wrap;
-  gap: 12px;
+  gap: 10px;
 }
 
 .product-detail-tag {
@@ -142,7 +145,7 @@
   background-color: #f5f8ff;
   color: var(--color-primary);
   border-radius: 999px;
-  padding: 10px 14px;
+  padding: 10px 13px;
   font-size: 0.88rem;
   font-weight: 500;
 }
@@ -152,52 +155,123 @@
 }
 
 .product-detail-panels {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  margin-top: 4px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 14px;
+  align-items: start;
+}
+
+.product-detail-panels > .product-detail-panel:nth-child(2):not(.wallet-panel) {
+  display: none;
 }
 
 .product-detail-panel {
   background-color: #faf8f3;
   border: 1px solid rgba(0, 0, 0, 0.04);
   border-radius: 22px;
-  padding: 18px;
+  padding: 16px 18px;
 }
 
 .product-detail-panel h3 {
-  font-size: 1rem;
+  font-size: 0.98rem;
   font-weight: 700;
   color: var(--color-accent);
-  margin-bottom: 12px;
+  margin-bottom: 10px;
 }
 
 .product-detail-panel p,
 .product-detail-panel li {
-  font-size: 0.95rem;
+  font-size: 0.92rem;
   color: var(--color-text-light);
-  line-height: 1.55;
+  line-height: 1.45;
 }
 
 .product-detail-panel ul {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+  display: grid;
+  gap: 7px;
 }
 
 .product-detail-actions {
   display: flex;
   flex-wrap: wrap;
   gap: 12px;
-  margin-top: 4px;
+  margin-top: 2px;
+  padding-top: 2px;
+}
+
+.product-detail-socials {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 2px;
+}
+
+.product-detail-socials-title {
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: var(--color-accent);
+}
+
+.business-social-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.business-social-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 10px 14px;
+  border-radius: 999px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  background: #fff;
+  color: var(--color-text);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.business-social-link:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 18px rgba(0, 0, 0, 0.07);
+}
+
+.business-social-link .material-symbols-outlined {
+  font-size: 18px;
+}
+
+.business-social-link.whatsapp {
+  color: #147a44;
+  border-color: rgba(20, 122, 68, 0.14);
+  background: #f2fcf6;
+}
+
+.business-social-link.instagram {
+  color: #b23474;
+  border-color: rgba(178, 52, 116, 0.14);
+  background: #fff4fa;
+}
+
+.business-social-link.tiktok {
+  color: #111827;
+  border-color: rgba(17, 24, 39, 0.12);
+  background: #f5f7fa;
+}
+
+.business-social-empty {
+  font-size: 0.92rem;
+  color: var(--color-text-light);
+  line-height: 1.45;
 }
 
 .product-detail-primary-btn {
-  min-width: 180px;
+  min-width: 190px;
 }
 
 .product-detail-secondary-btn {
-  min-width: 180px;
+  min-width: 190px;
   background-color: #f5f8ff;
   color: var(--color-primary);
   border: 1px solid rgba(15, 76, 151, 0.12);
@@ -208,7 +282,7 @@
 }
 
 .product-detail-outline-btn {
-  min-width: 180px;
+  min-width: 160px;
   background-color: transparent;
   color: var(--color-text);
   border: 1px solid rgba(0, 0, 0, 0.14);
@@ -219,7 +293,7 @@
 }
 
 .related-products-section {
-  padding: 12px 0 34px;
+  padding: 16px 0 34px;
 }
 
 .product-section-header {
@@ -420,16 +494,24 @@
     grid-template-columns: 1fr;
   }
 
+  .product-detail-panels {
+    grid-template-columns: 1fr;
+  }
+
   .product-detail-image-wrapper,
   .product-detail-image {
-    min-height: 380px;
-    height: 380px;
+    min-height: 360px;
+    height: 360px;
   }
 }
 
 @media (max-width: 768px) {
   .product-detail-body {
     padding: 24px;
+  }
+
+  .product-detail-actions > * {
+    width: 100%;
   }
 
   .product-detail-title {
@@ -470,6 +552,10 @@
     height: 72px;
   }
 
+  .product-detail-panel {
+    padding: 15px 16px;
+  }
+
   .custom-modal {
     padding: 24px 18px 20px;
     border-radius: 22px;
@@ -479,6 +565,7 @@
 .wallet-panel {
   border: 1px solid rgba(15, 76, 151, 0.08);
   background: linear-gradient(180deg, #ffffff 0%, #f7fbff 100%);
+  grid-column: 1 / -1;
 }
 
 .wallet-panel.success {

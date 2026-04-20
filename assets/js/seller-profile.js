@@ -41,6 +41,68 @@ document.addEventListener("DOMContentLoaded", () => {
       : "../assets/images/logo-seller-default.png";
   }
 
+  function normalizeUrl(value, baseUrl = "") {
+    const text = String(value || "").trim();
+    if (!text) return "";
+    if (/^https?:\/\//i.test(text)) return text;
+    return baseUrl ? `${baseUrl}${text.replace(/^@+/, "")}` : text;
+  }
+
+  function getWhatsAppUrl(phone) {
+    const digits = String(phone || "").replace(/\D/g, "");
+    if (!digits) return "";
+
+    const phoneWithCountryCode = digits.length === 8 ? `505${digits}` : digits;
+    return `https://wa.me/${phoneWithCountryCode}`;
+  }
+
+  function getBusinessSocialLinks(business) {
+    return [
+      {
+        label: "WhatsApp",
+        icon: "chat",
+        url: getWhatsAppUrl(business?.contactPhone),
+        className: "whatsapp"
+      },
+      {
+        label: "Instagram",
+        icon: "photo_camera",
+        url: normalizeUrl(business?.instagram, "https://www.instagram.com/"),
+        className: "instagram"
+      },
+      {
+        label: "TikTok",
+        icon: "music_note",
+        url: normalizeUrl(business?.tiktok, "https://www.tiktok.com/@"),
+        className: "tiktok"
+      }
+    ].filter((item) => item.url);
+  }
+
+  function renderBusinessSocialLinks(business) {
+    const links = getBusinessSocialLinks(business);
+
+    if (!links.length) {
+      return `<p class="seller-social-empty">Este emprendimiento aÃºn no tiene redes sociales publicadas.</p>`;
+    }
+
+    return `
+      <div class="seller-social-links">
+        ${links.map((link) => `
+          <a
+            href="${escapeHtml(link.url)}"
+            class="seller-social-link ${escapeHtml(link.className)}"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <span class="material-symbols-outlined">${escapeHtml(link.icon)}</span>
+            ${escapeHtml(link.label)}
+          </a>
+        `).join("")}
+      </div>
+    `;
+  }
+
   function formatHourRange(hour) {
     if (hour.isClosed) return "Cerrado";
 
@@ -139,7 +201,9 @@ document.addEventListener("DOMContentLoaded", () => {
             <div class="seller-info-list">
               <div class="seller-info-item">
                 <span class="material-symbols-outlined">call</span>
-                <span>${escapeHtml(business.contactPhone || "No disponible")}</span>
+                <span>${business.contactPhone
+                  ? `<a href="${escapeHtml(getWhatsAppUrl(business.contactPhone))}" class="seller-contact-link" target="_blank" rel="noopener noreferrer">${escapeHtml(business.contactPhone)}</a>`
+                  : "No disponible"}</span>
               </div>
 
               <div class="seller-info-item">
@@ -157,6 +221,11 @@ document.addEventListener("DOMContentLoaded", () => {
                 <span>${escapeHtml(business.referenceNote || "Sin referencia adicional")}</span>
               </div>
             </div>
+          </div>
+
+          <div class="seller-info-card">
+            <h3>Redes sociales</h3>
+            ${renderBusinessSocialLinks(business)}
           </div>
 
           <div class="seller-info-card">
