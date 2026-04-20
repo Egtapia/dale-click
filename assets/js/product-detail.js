@@ -20,6 +20,15 @@ function safeText(value, fallback = "-") {
   return value && String(value).trim() ? String(value).trim() : fallback;
 }
 
+function escapeHtml(text) {
+  return String(text ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
 function getValidImageUrl(url) {
   return url && String(url).trim() !== ""
     ? String(url).trim()
@@ -194,6 +203,96 @@ function renderGallery(images, productName, preferredImageUrl) {
 
     thumbsContainer.appendChild(button);
   });
+}
+
+function buildRelatedProductCard(product) {
+  return `
+    <article class="product-card">
+      <div class="product-card-image-wrap">
+        <img
+          class="product-card-image"
+          src="${escapeHtml(getValidImageUrl(product.imageURL))}"
+          alt="${escapeHtml(product.productName || "Producto")}"
+          loading="lazy"
+          onerror="this.src='../assets/images/producto-default.jpg'"
+        />
+      </div>
+
+      <div class="product-card-content">
+        <span class="product-card-category">${escapeHtml(product.categoryName || "Categoria")}</span>
+        <h3 class="product-card-title">${escapeHtml(product.productName || "Producto sin nombre")}</h3>
+        <p class="product-card-price">${formatPrice(product.price)}</p>
+        <p class="product-card-business">${escapeHtml(product.businessName || "Negocio local")}</p>
+
+        <a class="product-card-button" href="./product-detail.html?id=${encodeURIComponent(product.productID || "")}">
+          Ver
+        </a>
+      </div>
+    </article>
+  `;
+}
+
+function rankRelatedProducts(baseProduct, products) {
+  return products
+    .filter((product) => String(product.productID) !== String(baseProduct.productID))
+    .map((product) => {
+      const sameBusiness = String(product.businessID) === String(baseProduct.businessID);
+      const sameCategory =
+        String(product.categoryID ?? product.categoryValue ?? "") ===
+        String(baseProduct.categoryID ?? baseProduct.categoryValue ?? "");
+
+      return {
+        ...product,
+        _sameBusiness: sameBusiness,
+        _sameCategory: sameCategory,
+        _score: (sameBusiness ? 2 : 0) + (sameCategory ? 1 : 0)
+      };
+    })
+    .filter((product) => product._score > 0)
+    .sort((a, b) => {
+      if (b._score !== a._score) return b._score - a._score;
+      return Number(b.productID || 0) - Number(a.productID || 0);
+    });
+}
+
+function renderRelatedProducts(baseProduct, products) {
+  const grid = document.getElementById("related-products-grid");
+  const noResults = document.getElementById("related-products-no-results");
+
+  if (!grid || !noResults) return;
+
+  const relatedProducts = rankRelatedProducts(baseProduct, products).slice(0, 6);
+
+  if (!relatedProducts.length) {
+    grid.innerHTML = "";
+    noResults.style.display = "block";
+    return;
+  }
+
+  grid.innerHTML = relatedProducts.map(buildRelatedProductCard).join("");
+  noResults.style.display = "none";
+}
+
+async function loadRelatedProducts(product) {
+  const grid = document.getElementById("related-products-grid");
+  const noResults = document.getElementById("related-products-no-results");
+
+  if (!grid || !noResults) return;
+
+  try {
+    const response = await fetch(PRODUCT_API_BASE);
+    const data = await response.json();
+
+    if (!response.ok || !data.ok || !Array.isArray(data.products)) {
+      throw new Error("Respuesta invalida al obtener productos relacionados.");
+    }
+
+    renderRelatedProducts(product, data.products);
+  } catch (error) {
+    console.error("Error cargando productos relacionados:", error);
+    grid.innerHTML = "";
+    noResults.style.display = "block";
+  }
 }
 
 function bindReserveButton(product) {
@@ -455,6 +554,7 @@ async function loadProductDetail() {
     }
 
     renderProductDetail(data.product);
+    await loadRelatedProducts(data.product);
   } catch (error) {
     console.error("Error cargando detalle del producto:", error);
     if (container) {
