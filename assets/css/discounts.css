@@ -320,20 +320,130 @@
 }
 
 @media (max-width: 576px) {
+  .discounts-hero-section {
+    padding: 8px 0 12px;
+  }
+
+  .discounts-hero-card {
+    padding: 18px 16px;
+    border-radius: 24px;
+    gap: 12px;
+    box-shadow: 0 14px 28px rgba(244, 172, 46, 0.16);
+  }
+
+  .discounts-hero-badge {
+    margin-bottom: 10px;
+    padding: 6px 10px;
+    font-size: 0.74rem;
+  }
+
   .discounts-hero-content h1 {
-    font-size: 1.9rem;
+    font-size: 1.45rem;
+    line-height: 1.02;
+    max-width: 10ch;
   }
 
   .discounts-hero-content p:last-child {
-    font-size: 0.98rem;
+    font-size: 0.9rem;
+    line-height: 1.45;
+    max-width: 28ch;
+  }
+
+  .discounts-hero-icon {
+    width: 56px;
+    height: 56px;
+    border-radius: 18px;
+  }
+
+  .discounts-hero-icon .material-symbols-outlined {
+    font-size: 28px;
   }
 
   .discounts-toolbar {
-    padding: 16px;
+    padding: 14px;
+    border-radius: 22px;
+    gap: 12px;
+  }
+
+  .toolbar-label {
+    font-size: 0.8rem;
+    margin-bottom: 8px;
+  }
+
+  .discounts-search-wrapper {
+    min-height: 50px;
+    padding: 0 14px;
+  }
+
+  .discounts-search-wrapper input {
+    height: 50px;
+    font-size: 0.92rem;
+  }
+
+  .discounts-results-section {
+    padding: 10px 0 26px;
+  }
+
+  .discounts-results-header {
+    margin-bottom: 16px;
+  }
+
+  .discounts-results-header h2 {
+    font-size: 1.5rem;
+    line-height: 1.02;
+  }
+
+  .discounts-results-header p {
+    font-size: 0.9rem;
+  }
+
+  .discounts-grid {
+    gap: 14px;
+  }
+
+  .discount-card {
     border-radius: 20px;
   }
 
+  .discount-image {
+    height: 180px;
+  }
+
+  .discount-badge {
+    top: 12px;
+    left: 12px;
+    padding: 6px 10px;
+    font-size: 0.72rem;
+  }
+
   .discount-body {
-    padding: 16px;
+    padding: 14px;
+    gap: 8px;
+  }
+
+  .discount-type-badge,
+  .discount-tag {
+    padding: 6px 10px;
+    font-size: 0.74rem;
+  }
+
+  .discount-title {
+    font-size: 1.04rem;
+  }
+
+  .discount-business {
+    font-size: 0.84rem;
+  }
+
+  .discount-price-old {
+    font-size: 0.88rem;
+  }
+
+  .discount-price-new {
+    font-size: 1.34rem;
+  }
+
+  .discount-actions .btn-small {
+    width: 100%;
   }
 }

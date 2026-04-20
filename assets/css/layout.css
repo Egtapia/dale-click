@@ -131,6 +131,10 @@
   gap: 14px;
 }
 
+.header-actions:empty {
+  display: none;
+}
+
 .header-actions .btn {
   padding: 10px 16px;
   font-size: 0.94rem;

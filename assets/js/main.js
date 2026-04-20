@@ -124,6 +124,36 @@ document.addEventListener("DOMContentLoaded", () => {
           min-width: 200px;
         }
       }
+
+      @media (max-width: 576px) {
+        .user-menu-trigger {
+          gap: 8px;
+          padding: 8px 10px;
+          box-shadow: 0 6px 14px rgba(0, 0, 0, 0.04);
+        }
+
+        .user-avatar {
+          width: 28px;
+          height: 28px;
+          font-size: 0.82rem;
+        }
+
+        .user-menu-trigger .material-symbols-outlined {
+          font-size: 18px;
+        }
+
+        .user-menu-dropdown {
+          min-width: 184px;
+          border-radius: 16px;
+          padding: 8px;
+        }
+
+        .user-menu-link {
+          padding: 10px 12px;
+          border-radius: 12px;
+          font-size: 0.88rem;
+        }
+      }
     `;
     document.head.appendChild(style);
   }

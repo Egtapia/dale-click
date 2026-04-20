@@ -166,6 +166,99 @@
   }
 }
 
+@media (max-width: 576px) {
+  .account-section {
+    padding: 10px 0 22px;
+  }
+
+  .account-layout {
+    gap: 14px;
+  }
+
+  .account-sidebar {
+    gap: 12px;
+  }
+
+  .account-user-card,
+  .account-content-card,
+  .account-wallet-box {
+    border-radius: 22px;
+  }
+
+  .account-user-card {
+    padding: 18px 16px;
+  }
+
+  .account-avatar {
+    width: 56px;
+    height: 56px;
+    margin-bottom: 10px;
+    font-size: 1.1rem;
+  }
+
+  .account-user-card h2 {
+    font-size: 1.08rem;
+  }
+
+  .account-user-card p {
+    font-size: 0.84rem;
+  }
+
+  .account-nav {
+    gap: 8px;
+  }
+
+  .account-nav-link {
+    padding: 12px 14px;
+    border-radius: 16px;
+    font-size: 0.9rem;
+  }
+
+  .account-content-card {
+    padding: 18px 14px;
+  }
+
+  .account-content-header {
+    margin-bottom: 16px;
+  }
+
+  .account-content-header h1 {
+    font-size: 1.5rem;
+    line-height: 1.02;
+  }
+
+  .account-content-header p {
+    font-size: 0.88rem;
+  }
+
+  .account-info-grid {
+    gap: 12px;
+  }
+
+  .account-info-item {
+    border-radius: 16px;
+    padding: 12px;
+  }
+
+  .account-label {
+    font-size: 0.76rem;
+  }
+
+  .account-value {
+    font-size: 0.92rem;
+  }
+
+  .account-security-box {
+    margin-top: 14px;
+    border-radius: 16px;
+    padding: 12px 14px;
+  }
+
+  .account-security-box p {
+    font-size: 0.86rem;
+  }
+}
+
 .account-wallet-box {
   margin-top: 24px;
   background: linear-gradient(180deg, #fff 0%, #f9fbff 100%);
@@ -359,5 +452,38 @@
 
   .wallet-btn {
     width: 100%;
+  }
+}
+
+@media (max-width: 576px) {
+  .account-wallet-box {
+    margin-top: 16px;
+    padding: 16px 14px;
+  }
+
+  .account-wallet-header h2 {
+    font-size: 1.1rem;
+  }
+
+  .account-wallet-header p,
+  .wallet-toggle-text span,
+  .wallet-summary,
+  .wallet-message {
+    font-size: 0.86rem;
+  }
+
+  .wallet-toggle-row {
+    margin-top: 14px;
+    gap: 12px;
+  }
+
+  .wallet-input-group input {
+    min-height: 48px;
+    font-size: 0.92rem;
+  }
+
+  .wallet-btn {
+    min-height: 42px;
+    font-size: 0.88rem;
   }
 }

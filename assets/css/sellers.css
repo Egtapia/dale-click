@@ -550,25 +550,174 @@
 }
 
 @media (max-width: 576px) {
+  .sellers-hero-section {
+    padding: 8px 0 12px;
+  }
+
+  .sellers-hero-card {
+    padding: 18px 16px;
+    border-radius: 24px;
+    gap: 12px;
+    box-shadow: 0 14px 28px rgba(39, 92, 184, 0.14);
+  }
+
+  .sellers-hero-badge {
+    margin-bottom: 10px;
+    padding: 6px 10px;
+    font-size: 0.74rem;
+  }
+
   .sellers-hero-content h1 {
-    font-size: 1.9rem;
+    font-size: 1.45rem;
+    line-height: 1.02;
+    max-width: 11ch;
   }
 
   .sellers-hero-content p:last-child {
-    font-size: 0.98rem;
+    font-size: 0.9rem;
+    line-height: 1.45;
+    max-width: 29ch;
+  }
+
+  .sellers-hero-icon {
+    width: 56px;
+    height: 56px;
+    border-radius: 18px;
+  }
+
+  .sellers-hero-icon .material-symbols-outlined {
+    font-size: 28px;
   }
 
   .sellers-toolbar {
-    padding: 16px;
+    padding: 14px;
+    border-radius: 22px;
+    gap: 12px;
+  }
+
+  .toolbar-label {
+    font-size: 0.8rem;
+    margin-bottom: 8px;
+  }
+
+  .sellers-search-wrapper,
+  .category-select-trigger {
+    min-height: 50px;
+  }
+
+  .sellers-search-wrapper input,
+  .category-select-trigger-label {
+    font-size: 0.92rem;
+  }
+
+  .sellers-selected-university {
+    gap: 10px;
+    padding: 14px;
+    border-radius: 18px;
+  }
+
+  .sellers-back-link {
+    padding: 9px 12px;
+    font-size: 0.86rem;
+  }
+
+  .sellers-selected-university-copy p {
+    font-size: 0.78rem;
+  }
+
+  .sellers-selected-university-copy strong {
+    font-size: 0.95rem;
+  }
+
+  .sellers-results-section {
+    padding: 10px 0 26px;
+  }
+
+  .sellers-results-header {
+    margin-bottom: 16px;
+  }
+
+  .sellers-results-header h2 {
+    font-size: 1.5rem;
+    line-height: 1.02;
+  }
+
+  .sellers-results-header p {
+    font-size: 0.9rem;
+  }
+
+  .sellers-grid {
+    gap: 14px;
+  }
+
+  .seller-card {
     border-radius: 20px;
   }
 
+  .seller-cover {
+    height: 96px;
+  }
+
+  .seller-logo {
+    width: 58px;
+    height: 58px;
+    border-radius: 16px;
+    left: 16px;
+    bottom: -18px;
+    padding: 6px;
+  }
+
   .seller-body {
-    padding: 40px 18px 18px;
+    padding: 28px 16px 16px;
+    gap: 8px;
+  }
+
+  .seller-badge {
+    padding: 6px 9px;
+    font-size: 0.72rem;
+  }
+
+  .seller-category {
+    font-size: 0.76rem;
+  }
+
+  .seller-name {
+    font-size: 1.06rem;
+  }
+
+  .seller-description {
+    min-height: 0;
+    font-size: 0.86rem;
+    line-height: 1.42;
+  }
+
+  .seller-tag {
+    padding: 6px 10px;
+    font-size: 0.74rem;
+  }
+
+  .seller-actions .btn-small {
+    width: 100%;
   }
 
   .university-card {
-    padding: 22px 18px;
+    padding: 18px 16px;
+    border-radius: 20px;
+    gap: 14px;
+  }
+
+  .university-card-logo-wrap {
+    min-height: 124px;
+    border-radius: 18px;
+    padding: 18px;
+  }
+
+  .university-card-name {
+    font-size: 1.08rem;
+  }
+
+  .university-card-meta {
+    font-size: 0.86rem;
   }
 }
 

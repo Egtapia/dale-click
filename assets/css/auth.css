@@ -1,5 +1,6 @@
 .auth-page {
   min-height: 100vh;
+  min-height: 100svh;
   display: grid;
   grid-template-columns: 1fr 1fr;
   background:
@@ -432,6 +433,14 @@
     grid-template-columns: 1fr;
   }
 
+  .auth-panel-form {
+    order: 1;
+  }
+
+  .auth-panel-info {
+    order: 2;
+  }
+
   .auth-panel {
     padding: 30px 20px;
   }
@@ -453,6 +462,10 @@
 @media (max-width: 768px) {
   .auth-panel {
     padding: 20px 14px;
+  }
+
+  .auth-feature-list {
+    margin-top: 24px;
   }
 
   .auth-form-card {
@@ -494,6 +507,9 @@
   .auth-feature-item {
     padding: 14px 14px;
     border-radius: 16px;
+    min-height: auto;
+    gap: 12px;
+    align-items: flex-start;
   }
 
   .auth-info-content {
@@ -507,11 +523,18 @@
 
   .auth-form-highlight {
     grid-template-columns: 1fr;
+    gap: 12px;
+    margin-bottom: 18px;
   }
 
   .form-group input {
     min-height: 52px;
     padding: 13px 14px;
+  }
+
+  .auth-feature-item span:last-child {
+    max-width: none;
+    font-size: 0.94rem;
   }
 
   .auth-submit-btn {

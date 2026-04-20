@@ -528,32 +528,71 @@
 }
 
 @media (max-width: 576px) {
+  .product-detail-section {
+    padding: 8px 0 14px;
+  }
+
+  .product-detail-card {
+    border-radius: 24px;
+  }
+
   .product-detail-body {
-    padding: 18px;
+    padding: 14px;
+    gap: 14px;
   }
 
   .product-detail-title {
-    font-size: 1.75rem;
+    font-size: 1.4rem;
+    line-height: 1.02;
   }
 
   .product-detail-price {
-    font-size: 1.6rem;
+    font-size: 1.28rem;
   }
 
   .product-detail-image-wrapper,
   .product-detail-image {
-    min-height: 300px;
-    height: 300px;
-    border-radius: 20px;
+    min-height: 220px;
+    height: 220px;
+    border-radius: 18px;
   }
 
   .product-detail-thumb {
-    width: 72px;
-    height: 72px;
+    width: 58px;
+    height: 58px;
+    border-radius: 14px;
   }
 
   .product-detail-panel {
-    padding: 15px 16px;
+    padding: 13px 14px;
+    border-radius: 18px;
+  }
+
+  .product-detail-badge,
+  .product-detail-tag {
+    padding: 6px 10px;
+    font-size: 0.74rem;
+  }
+
+  .product-detail-description,
+  .product-detail-panel p,
+  .product-detail-panel li,
+  .wallet-panel-text {
+    font-size: 0.86rem;
+    line-height: 1.45;
+  }
+
+  .business-social-link {
+    min-height: 38px;
+    padding: 8px 12px;
+    font-size: 0.82rem;
+  }
+
+  .product-detail-primary-btn,
+  .product-detail-secondary-btn,
+  .product-detail-outline-btn {
+    min-width: 0;
+    width: 100%;
   }
 
   .custom-modal {
