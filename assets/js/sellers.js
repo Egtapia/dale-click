@@ -165,6 +165,32 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  function closeAllCustomDropdowns() {
+    document.querySelectorAll(".sellers-custom-select.is-open").forEach((item) => {
+      item.classList.remove("is-open");
+      const itemTrigger = item.querySelector(".category-select-trigger");
+      const itemDropdown = item.querySelector(".category-select-dropdown");
+
+      if (itemTrigger) itemTrigger.setAttribute("aria-expanded", "false");
+      if (itemDropdown) itemDropdown.hidden = true;
+    });
+  }
+
+  function setCustomSelectDisabled(wrapperElement, triggerElement, isDisabled) {
+    if (!wrapperElement || !triggerElement) return;
+
+    wrapperElement.classList.toggle("is-disabled", isDisabled);
+    triggerElement.disabled = isDisabled;
+
+    if (isDisabled) {
+      wrapperElement.classList.remove("is-open");
+      triggerElement.setAttribute("aria-expanded", "false");
+
+      const dropdownElement = wrapperElement.querySelector(".category-select-dropdown");
+      if (dropdownElement) dropdownElement.hidden = true;
+    }
+  }
+
   function setupCustomSelect(config) {
     const {
       selectElement,
@@ -213,16 +239,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (wrapperElement.dataset.bound !== "true") {
       triggerElement.addEventListener("click", () => {
+        if (triggerElement.disabled) return;
+
         const isOpen = wrapperElement.classList.contains("is-open");
 
-        document.querySelectorAll(".sellers-custom-select.is-open").forEach((item) => {
-          item.classList.remove("is-open");
-          const itemTrigger = item.querySelector(".category-select-trigger");
-          const itemDropdown = item.querySelector(".category-select-dropdown");
-
-          if (itemTrigger) itemTrigger.setAttribute("aria-expanded", "false");
-          if (itemDropdown) itemDropdown.hidden = true;
-        });
+        closeAllCustomDropdowns();
 
         if (isOpen) return;
 
@@ -255,6 +276,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function syncCustomDropdowns() {
     setupCustomSelect({
+      selectElement: typeFilter,
+      wrapperElement: document.getElementById("sellers-type-select-wrapper"),
+      triggerElement: document.getElementById("sellers-type-select-trigger"),
+      labelElement: document.getElementById("sellers-type-select-label"),
+      dropdownElement: document.getElementById("sellers-type-select-dropdown")
+    });
+
+    setupCustomSelect({
       selectElement: universityFilter,
       wrapperElement: document.getElementById("sellers-university-select-wrapper"),
       triggerElement: document.getElementById("sellers-university-select-trigger"),
@@ -272,7 +301,20 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function syncFilterOptions(sellers) {
-    const universityOptions = sellers
+    const selectedType = normalizeText(typeFilter?.value || "todos");
+    const selectedUniversity = normalizeText(universityFilter?.value || "todas");
+    const selectedLocation = normalizeText(locationFilter?.value || "todas");
+
+    if (selectedType !== "universitario" && universityFilter && universityFilter.value !== "todas") {
+      universityFilter.value = "todas";
+    }
+
+    const universitySource = sellers.filter(
+      (seller) => seller.type === "universitario" && seller.universityName && seller.universityValue
+    );
+
+    const universityOptions = universitySource
+      .filter((seller) => selectedType === "todos" || normalizeText(seller.type) === selectedType)
       .filter((seller) => seller.type === "universitario" && seller.universityName && seller.universityValue)
       .map((seller) => ({
         value: seller.universityValue,
@@ -284,7 +326,19 @@ document.addEventListener("DOMContentLoaded", () => {
       )
       .sort(sortOptionLabels);
 
-    const locationOptions = sellers
+    const effectiveUniversity = selectedType === "universitario"
+      ? normalizeText(universityFilter?.value || "todas")
+      : "todas";
+
+    const locationSource = sellers.filter((seller) => {
+      const matchesType = selectedType === "todos" || normalizeText(seller.type) === selectedType;
+      const matchesUniversity = effectiveUniversity === "todas"
+        || normalizeText(seller.universityValue) === effectiveUniversity;
+
+      return matchesType && matchesUniversity;
+    });
+
+    const locationOptions = locationSource
       .filter((seller) => seller.location && seller.locationValue)
       .map((seller) => ({
         value: seller.locationValue,
@@ -307,9 +361,32 @@ document.addEventListener("DOMContentLoaded", () => {
     }, locationOptions);
 
     syncCustomDropdowns();
+
+    setCustomSelectDisabled(
+      document.getElementById("sellers-university-select-wrapper"),
+      document.getElementById("sellers-university-select-trigger"),
+      selectedType === "local"
+    );
+
+    const activeUniversity = normalizeText(universityFilter?.value || "todas");
+    const activeLocation = normalizeText(locationFilter?.value || "todas");
+    const hasUniversityOption = universityOptions.some((option) => normalizeText(option.value) === activeUniversity);
+    const hasLocationOption = locationOptions.some((option) => normalizeText(option.value) === activeLocation);
+
+    if (universityFilter && activeUniversity !== "todas" && !hasUniversityOption) {
+      universityFilter.value = "todas";
+      syncCustomDropdowns();
+    }
+
+    if (locationFilter && activeLocation !== "todas" && !hasLocationOption) {
+      locationFilter.value = "todas";
+      syncCustomDropdowns();
+    }
   }
 
   function applyFilters() {
+    syncFilterOptions(allSellers);
+
     const searchTerm = normalizeText(searchInput?.value);
     const selectedType = normalizeText(typeFilter?.value);
     const selectedUniversity = normalizeText(universityFilter?.value);

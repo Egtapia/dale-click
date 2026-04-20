@@ -103,12 +103,33 @@
                 Tipo de emprendimiento
               </label>
 
-              <div class="filters-select-wrapper">
+              <div class="filters-select-wrapper sellers-custom-select" id="sellers-type-select-wrapper">
                 <select id="sellers-type-filter" aria-label="Filtrar por tipo de emprendimiento">
                   <option value="todos">Todos</option>
                   <option value="universitario">Emprendimiento universitario</option>
                   <option value="local">Negocio local</option>
                 </select>
+
+                <button
+                  type="button"
+                  class="category-select-trigger"
+                  id="sellers-type-select-trigger"
+                  aria-haspopup="listbox"
+                  aria-expanded="false"
+                  aria-controls="sellers-type-select-dropdown"
+                >
+                  <span class="material-symbols-outlined category-select-trigger-icon" aria-hidden="true">storefront</span>
+                  <span class="category-select-trigger-label" id="sellers-type-select-label">Todos</span>
+                  <span class="material-symbols-outlined category-select-trigger-arrow" aria-hidden="true">expand_more</span>
+                </button>
+
+                <div
+                  class="category-select-dropdown"
+                  id="sellers-type-select-dropdown"
+                  role="listbox"
+                  aria-label="Tipos de emprendimiento"
+                  hidden
+                ></div>
               </div>
             </div>
 
