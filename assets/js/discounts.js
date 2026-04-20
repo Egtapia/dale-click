@@ -5,22 +5,23 @@ document.addEventListener("DOMContentLoaded", () => {
   const universityFilter = document.getElementById("discounts-university-filter");
   const noResultsMessage = document.getElementById("discounts-no-results");
   const resultsCount = document.getElementById("discounts-results-count");
+  const PRODUCTS_API_URL = "http://localhost:3001/api/products";
 
   if (!discountsGrid) return;
 
   const mockDiscounts = [
     {
       productID: 1,
-      productName: "Cámara Canon",
+      productName: "Camara Canon",
       businessName: "Foto Studio",
       oldPrice: 12000,
       newPrice: 11000,
       discountPercent: 8,
-      category: "Tecnología",
+      category: "Tecnologia",
       type: "universitario",
       universityName: "Keiser University Latin American Campus (Managua)",
       universityValue: "keiser-managua",
-      imageURL: "../assets/images/producto-1.jpg"
+      imageURL: ""
     },
     {
       productID: 3,
@@ -33,7 +34,7 @@ document.addEventListener("DOMContentLoaded", () => {
       type: "universitario",
       universityName: "Keiser University Latin American Campus (San Marcos)",
       universityValue: "keiser-san-marcos",
-      imageURL: "../assets/images/producto-3.jpg"
+      imageURL: ""
     },
     {
       productID: 4,
@@ -46,7 +47,7 @@ document.addEventListener("DOMContentLoaded", () => {
       type: "local",
       universityName: "",
       universityValue: "",
-      imageURL: "../assets/images/producto-4.jpg"
+      imageURL: ""
     },
     {
       productID: 5,
@@ -59,7 +60,7 @@ document.addEventListener("DOMContentLoaded", () => {
       type: "local",
       universityName: "",
       universityValue: "",
-      imageURL: "../assets/images/producto-5.jpg"
+      imageURL: ""
     },
     {
       productID: 7,
@@ -72,11 +73,11 @@ document.addEventListener("DOMContentLoaded", () => {
       type: "universitario",
       universityName: "UAM",
       universityValue: "uam",
-      imageURL: "../assets/images/producto-default.jpg"
+      imageURL: ""
     },
     {
       productID: 8,
-      productName: "Asesoría express",
+      productName: "Asesoria express",
       businessName: "ServiClick",
       oldPrice: 650,
       newPrice: 500,
@@ -85,9 +86,12 @@ document.addEventListener("DOMContentLoaded", () => {
       type: "universitario",
       universityName: "UNI",
       universityValue: "uni",
-      imageURL: "../assets/images/producto-default.jpg"
+      imageURL: ""
     }
   ];
+
+  let allDiscounts = [...mockDiscounts];
+  const fallbackImageUrl = buildFallbackImageUrl();
 
   function normalizeText(text) {
     return (text || "")
@@ -110,6 +114,27 @@ document.addEventListener("DOMContentLoaded", () => {
   function formatPrice(price) {
     const numericPrice = Number(price) || 0;
     return `${numericPrice.toLocaleString("es-NI")} C$`;
+  }
+
+  function buildFallbackImageUrl() {
+    return "data:image/svg+xml;charset=UTF-8," + encodeURIComponent(`
+      <svg xmlns="http://www.w3.org/2000/svg" width="800" height="500" viewBox="0 0 800 500">
+        <rect width="800" height="500" fill="#f5f1ea" />
+        <g fill="#d6cabb">
+          <rect x="185" y="120" width="430" height="260" rx="26" />
+          <circle cx="305" cy="205" r="40" fill="#e7dccf" />
+          <path d="M245 330l92-92c12-12 32-12 44 0l50 50 58-58c12-12 32-12 44 0l86 86H245z" fill="#e7dccf" />
+        </g>
+      </svg>
+    `);
+  }
+
+  function getImageUrl(discount) {
+    if (discount.imageURL && String(discount.imageURL).trim() !== "") {
+      return discount.imageURL;
+    }
+
+    return fallbackImageUrl;
   }
 
   function getTypeBadge(discount) {
@@ -150,10 +175,11 @@ document.addEventListener("DOMContentLoaded", () => {
       <article class="discount-card">
         <div class="discount-image-wrapper">
           <img
-            src="${escapeHtml(discount.imageURL)}"
+            src="${escapeHtml(getImageUrl(discount))}"
             alt="${escapeHtml(discount.productName)}"
             class="discount-image"
-            onerror="this.src='../assets/images/producto-default.jpg'"
+            loading="lazy"
+            onerror="this.onerror=null;this.src='${escapeHtml(fallbackImageUrl)}'"
           />
           <span class="discount-badge">-${escapeHtml(discount.discountPercent)}%</span>
         </div>
@@ -202,11 +228,11 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function applyFilters() {
-    const searchTerm = normalizeText(searchInput.value);
-    const selectedType = normalizeText(typeFilter.value);
-    const selectedUniversity = normalizeText(universityFilter.value);
+    const searchTerm = normalizeText(searchInput?.value);
+    const selectedType = normalizeText(typeFilter?.value);
+    const selectedUniversity = normalizeText(universityFilter?.value);
 
-    let filteredDiscounts = [...mockDiscounts];
+    let filteredDiscounts = [...allDiscounts];
 
     if (searchTerm) {
       filteredDiscounts = filteredDiscounts.filter((discount) => {
@@ -239,21 +265,63 @@ document.addEventListener("DOMContentLoaded", () => {
     `;
   }
 
-  renderLoadingState();
-
-  setTimeout(() => {
-    applyFilters();
-  }, 150);
-
-  if (searchInput) {
-    searchInput.addEventListener("input", applyFilters);
+  function renderErrorState() {
+    discountsGrid.innerHTML = `
+      <article class="discounts-message-card">
+        <p>No se pudieron cargar las imagenes de descuentos en este momento.</p>
+      </article>
+    `;
   }
 
-  if (typeFilter) {
-    typeFilter.addEventListener("change", applyFilters);
+  async function fetchProductsFromApi() {
+    const response = await fetch(PRODUCTS_API_URL);
+    const data = await response.json();
+
+    if (!response.ok || !data.ok || !Array.isArray(data.products)) {
+      throw new Error("Respuesta invalida al obtener productos.");
+    }
+
+    return data.products;
   }
 
-  if (universityFilter) {
-    universityFilter.addEventListener("change", applyFilters);
+  function mergeDiscountImages(products) {
+    const productsById = new Map(
+      products.map((product) => [Number(product.productID), product])
+    );
+
+    allDiscounts = mockDiscounts.map((discount) => {
+      const matchingProduct = productsById.get(Number(discount.productID));
+
+      if (!matchingProduct) {
+        return discount;
+      }
+
+      return {
+        ...discount,
+        imageURL: matchingProduct.imageURL || "",
+        productName: matchingProduct.productName || discount.productName,
+        businessName: matchingProduct.businessName || discount.businessName,
+        category: matchingProduct.categoryName || discount.category
+      };
+    });
   }
+
+  async function loadDiscounts() {
+    try {
+      renderLoadingState();
+      const products = await fetchProductsFromApi();
+      mergeDiscountImages(products);
+      applyFilters();
+    } catch (error) {
+      console.error("Error cargando descuentos:", error);
+      allDiscounts = [...mockDiscounts];
+      renderErrorState();
+    }
+  }
+
+  searchInput?.addEventListener("input", applyFilters);
+  typeFilter?.addEventListener("change", applyFilters);
+  universityFilter?.addEventListener("change", applyFilters);
+
+  loadDiscounts();
 });
