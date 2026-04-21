@@ -289,7 +289,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (typing) typing.remove();
   }
 
-  async function sendMessage(textFromSuggestion = "") {
+async function sendMessage(textFromSuggestion = "") {
     const content = String(textFromSuggestion || input.value || "").trim();
     if (!content) return;
 
@@ -309,13 +309,25 @@ document.addEventListener("DOMContentLoaded", () => {
         headers.Authorization = `Bearer ${token}`;
       }
 
-      const response = await fetch(CHATBOT_API_URL, {
-        method: "POST",
-        headers,
-        body: JSON.stringify({ message: content })
-      });
-
-      const data = await response.json();
+      const apiResponse = window.DaleClickAPI?.requestJson
+        ? await window.DaleClickAPI.requestJson(
+            CHATBOT_API_URL,
+            {
+              method: "POST",
+              headers,
+              body: JSON.stringify({ message: content })
+            },
+            "Chatbot"
+          )
+        : {
+            response: await fetch(CHATBOT_API_URL, {
+              method: "POST",
+              headers,
+              body: JSON.stringify({ message: content })
+            })
+          };
+      const response = apiResponse.response;
+      const data = apiResponse.data || await response.json();
       removeTyping();
 
       if (!response.ok || !data.ok) {

@@ -6,6 +6,16 @@ const DEFAULT_PRODUCTS_SECTION_TITLE = "Productos destacados";
 const DEFAULT_PRODUCTS_SECTION_DESCRIPTION =
   "Descubre opciones de emprendedores universitarios y negocios locales.";
 
+async function requestHomeJson(url, contextLabel) {
+  if (window.DaleClickAPI?.requestJson) {
+    return window.DaleClickAPI.requestJson(url, {}, contextLabel);
+  }
+
+  const response = await fetch(url);
+  const data = await response.json();
+  return { response, data };
+}
+
 function initHeroCarousel() {
   const slides = Array.from(document.querySelectorAll(".hero-bg-slide"));
   const indicators = Array.from(document.querySelectorAll(".hero-slide-indicator"));
@@ -340,22 +350,20 @@ function applyHomeFilters() {
 }
 
 async function fetchProducts() {
-  const response = await fetch(PRODUCTS_API_URL);
-  const data = await response.json();
+  const { response, data } = await requestHomeJson(PRODUCTS_API_URL, "Productos del home");
 
   if (!response.ok || !data.ok || !Array.isArray(data.products)) {
-    throw new Error("Respuesta invalida al obtener productos.");
+    throw new Error(`Respuesta invalida al obtener productos desde ${response.url}.`);
   }
 
   return data.products;
 }
 
 async function fetchCategories() {
-  const response = await fetch(CATEGORIES_API_URL);
-  const data = await response.json();
+  const { response, data } = await requestHomeJson(CATEGORIES_API_URL, "Categorias del home");
 
   if (!response.ok || !data.ok || !Array.isArray(data.categories)) {
-    throw new Error("Respuesta invalida al obtener categorias.");
+    throw new Error(`Respuesta invalida al obtener categorias desde ${response.url}.`);
   }
 
   return data.categories;
