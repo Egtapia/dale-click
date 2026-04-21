@@ -8,6 +8,7 @@ import authRoutes from "./routes/auth.routes.js";
 import reservationRoutes from "./routes/reservation.routes.js";
 import productRoutes from "./routes/product.routes.js";
 import businessRoutes from "./routes/business.routes.js";
+import chatbotRoutes from "./routes/chatbot.routes.js";
 
 dotenv.config();
 
@@ -60,6 +61,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/reservations", reservationRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/businesses", businessRoutes);
+app.use("/api/chatbot", chatbotRoutes);
 
 app.get("/", (req, res) => {
   res.sendFile(path.join(BUYER_DIR, "index.html"));
