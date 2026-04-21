@@ -2,7 +2,7 @@ const CHATBOT_API_URL = "/api/chatbot/message";
 const CHATBOT_IMAGE_URL = "/assets/images/clicky.png";
 const CHATBOT_DEFAULT_SUGGESTIONS = [
   "Quiero algo barato",
-  "Muestrame comida",
+  "Mu\u00e9strame comida",
   "Busco ropa",
   "Quiero ver negocios locales"
 ];
@@ -66,6 +66,10 @@ function renderChatbotProductCard(product) {
 }
 
 function renderChatbotBusinessCard(business) {
+  const locationLabel = business.universityName
+    ? `${business.city || "Sin ciudad"} | ${business.universityName}`
+    : (business.city || "Sin ciudad");
+
   return `
     <article class="chatbot-card">
       <div class="chatbot-card-media">
@@ -79,7 +83,7 @@ function renderChatbotBusinessCard(business) {
       <div class="chatbot-card-body">
         <span class="chatbot-card-badge">${chatbotEscapeHtml(business.categoryName || "Negocio")}</span>
         <h4 class="chatbot-card-title">${chatbotEscapeHtml(business.businessName || "Negocio sin nombre")}</h4>
-        <p class="chatbot-card-meta">${chatbotEscapeHtml(business.city || "Sin ciudad")}</p>
+        <p class="chatbot-card-meta">${chatbotEscapeHtml(locationLabel)}</p>
         <p class="chatbot-card-copy">${chatbotEscapeHtml(business.description || "Explora sus productos disponibles.")}</p>
         <div class="chatbot-card-actions">
           <a class="chatbot-card-link" href="${chatbotEscapeHtml(business.detailPath || "#")}">Ver negocio</a>
@@ -133,7 +137,7 @@ function ensureChatbotMarkup() {
             </div>
             <div>
               <h2 class="chatbot-title" id="chatbot-title">Clicky</h2>
-              <p class="chatbot-subtitle">Tú Compañero de Compras</p>
+              <p class="chatbot-subtitle">Tu compa\u00f1ero de compras</p>
             </div>
           </div>
 
@@ -152,7 +156,6 @@ function ensureChatbotMarkup() {
             class="chatbot-input"
             id="chatbot-input"
             rows="1"
-            placeholder=""
           ></textarea>
 
           <button type="submit" class="chatbot-submit" id="chatbot-submit" aria-label="Enviar mensaje">
@@ -320,12 +323,12 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
       }
 
-      appendMessage("bot", data.reply || "Aqui tienes una respuesta.", data);
+      appendMessage("bot", data.reply || "Aqu\u00ed tienes una respuesta.", data);
       renderSuggestions(data.suggestions);
     } catch (error) {
       console.error("Error enviando mensaje al chatbot:", error);
       removeTyping();
-      appendMessage("bot", "Ocurrio un error de conexion. Revisa la pagina e intenta otra vez.");
+      appendMessage("bot", "Ocurri\u00f3 un error de conexi\u00f3n. Revisa la p\u00e1gina e intenta otra vez.");
     } finally {
       submitButton.disabled = false;
       input.focus();
@@ -340,6 +343,13 @@ document.addEventListener("DOMContentLoaded", () => {
     sendMessage();
   });
 
+  input.addEventListener("keydown", (event) => {
+    if (event.key === "Enter" && !event.shiftKey) {
+      event.preventDefault();
+      sendMessage();
+    }
+  });
+
   input.addEventListener("input", () => {
     input.style.height = "auto";
     input.style.height = `${Math.min(input.scrollHeight, 120)}px`;
@@ -347,7 +357,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   appendMessage(
     "bot",
-    "Hola, soy Clicky! Puedo ayudarte a encontrar productos, negocios y explicarte como funciona Dale Click."
+    "\u00a1Hola, soy Clicky! Puedo ayudarte a encontrar productos, negocios y explicarte c\u00f3mo funciona Dale Click."
   );
   renderSuggestions(CHATBOT_DEFAULT_SUGGESTIONS);
 });

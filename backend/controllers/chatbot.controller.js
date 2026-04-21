@@ -7,6 +7,38 @@ import {
   FAQ_ENTRIES
 } from "../utils/chatbot-knowledge.js";
 
+const CATEGORY_FILTER_GROUPS = {
+  comida: ["alimentos", "restaurantes"],
+  tecnologia: ["tecnologia"],
+  ropa: ["ropa y accesorios"],
+  belleza: ["belleza y cosmeticos", "salud y bienestar"],
+  hogar: ["hogar y muebles"],
+  servicios: ["servicios", "educacion y tutoria"]
+};
+
+const UNIVERSITY_ALIASES = {
+  "la uni": "uni",
+  uni: "uni",
+  "la u": "uni",
+  "universidad nacional de ingenieria": "uni",
+  "u n i": "uni",
+  uam: "uam",
+  americana: "uam",
+  unan: "unan",
+  "unan managua": "unan managua",
+  "unan leon": "unan leon",
+  "universidad nacional autonoma": "unan",
+  unicit: "unicit",
+  ucc: "ucc",
+  ucn: "ucn",
+  una: "una",
+  udem: "udem",
+  keiser: "keiser",
+  upoli: "upoli",
+  uca: "uca",
+  "la salle": "la salle"
+};
+
 function normalizeText(value) {
   return String(value ?? "")
     .toLowerCase()
@@ -30,9 +62,107 @@ function formatPrice(value) {
   return `C$ ${amount.toFixed(2)}`;
 }
 
+function levenshteinDistance(source, target) {
+  const a = normalizeText(source);
+  const b = normalizeText(target);
+
+  if (!a) return b.length;
+  if (!b) return a.length;
+
+  const matrix = Array.from({ length: a.length + 1 }, () => new Array(b.length + 1).fill(0));
+
+  for (let i = 0; i <= a.length; i += 1) {
+    matrix[i][0] = i;
+  }
+
+  for (let j = 0; j <= b.length; j += 1) {
+    matrix[0][j] = j;
+  }
+
+  for (let i = 1; i <= a.length; i += 1) {
+    for (let j = 1; j <= b.length; j += 1) {
+      const cost = a[i - 1] === b[j - 1] ? 0 : 1;
+      matrix[i][j] = Math.min(
+        matrix[i - 1][j] + 1,
+        matrix[i][j - 1] + 1,
+        matrix[i - 1][j - 1] + cost
+      );
+    }
+  }
+
+  return matrix[a.length][b.length];
+}
+
+function areSimilarTerms(source, target) {
+  const a = normalizeText(source);
+  const b = normalizeText(target);
+
+  if (!a || !b) return false;
+  if (a === b) return true;
+  if (a.includes(b) || b.includes(a)) return true;
+
+  const distance = levenshteinDistance(a, b);
+  const maxLength = Math.max(a.length, b.length);
+
+  if (maxLength <= 5) {
+    return distance <= 1;
+  }
+
+  return distance <= 2;
+}
+
+function getMeaningfulWords(value) {
+  return normalizeText(value)
+    .split(" ")
+    .map((word) => word.trim())
+    .filter((word) => word.length >= 3);
+}
+
+function findBestCatalogMatch(message, values, options = {}) {
+  const normalizedMessage = normalizeText(message);
+  const messageWords = getMeaningfulWords(message);
+  const minimumScore = options.minimumScore ?? 2;
+  let bestMatch = "";
+  let bestScore = 0;
+
+  for (const rawValue of values) {
+    const candidate = normalizeText(rawValue);
+    if (!candidate) continue;
+
+    let score = 0;
+
+    if (normalizedMessage.includes(candidate)) {
+      score += Math.min(candidate.length + 4, 24);
+    }
+
+    const candidateWords = getMeaningfulWords(candidate);
+
+    for (const candidateWord of candidateWords) {
+      if (messageWords.some((messageWord) => areSimilarTerms(messageWord, candidateWord))) {
+        score += candidateWord.length >= 5 ? 3 : 2;
+      }
+    }
+
+    if (
+      candidateWords.length > 1 &&
+      candidateWords.every((candidateWord) =>
+        messageWords.some((messageWord) => areSimilarTerms(messageWord, candidateWord))
+      )
+    ) {
+      score += 5;
+    }
+
+    if (score > bestScore || (score === bestScore && candidate.length > bestMatch.length)) {
+      bestScore = score;
+      bestMatch = candidate;
+    }
+  }
+
+  return bestScore >= minimumScore ? bestMatch : "";
+}
+
 function parsePriceRange(message) {
   const normalized = normalizeText(message);
-
   const rangePatterns = [
     /\bentre\s+c?\$?\s*(\d{1,6})\s+y\s+c?\$?\s*(\d{1,6})\b/,
     /\bentre\s+c?\$?\s*(\d{1,6})\s+y\s+(\d{1,6})\b/,
@@ -44,7 +174,6 @@ function parsePriceRange(message) {
     if (match) {
       const first = Number(match[1]);
       const second = Number(match[2]);
-
       return {
         minPrice: Math.min(first, second),
         maxPrice: Math.max(first, second)
@@ -54,39 +183,32 @@ function parsePriceRange(message) {
 
   const upToMatch = normalized.match(/\b(?:menos de|maximo de|maximo|hasta|por)\s*c?\$?\s*(\d{1,6})\b/);
   if (upToMatch) {
-    return {
-      minPrice: null,
-      maxPrice: Number(upToMatch[1])
-    };
+    return { minPrice: null, maxPrice: Number(upToMatch[1]) };
   }
 
   const fromMatch = normalized.match(/\b(?:desde|mayor a|mas de|minimo de|minimo)\s*c?\$?\s*(\d{1,6})\b/);
   if (fromMatch) {
-    return {
-      minPrice: Number(fromMatch[1]),
-      maxPrice: null
-    };
+    return { minPrice: Number(fromMatch[1]), maxPrice: null };
   }
 
-  const genericMatch = normalized.match(/\bc?\$?\s*(\d{1,6})\s*(?:o menos|maximo|para abajo)?\b/);
+  const genericMatch = normalized.match(/\bc?\$?\s*(\d{1,6})\s*(?:o menos|maximo|para abajo|cordobas|cordoba)?\b/);
   if (genericMatch) {
-    return {
-      minPrice: null,
-      maxPrice: Number(genericMatch[1])
-    };
+    return { minPrice: null, maxPrice: Number(genericMatch[1]) };
   }
 
-  return {
-    minPrice: null,
-    maxPrice: null
-  };
+  return { minPrice: null, maxPrice: null };
 }
 
 function detectCategory(message) {
   const normalized = normalizeText(message);
+  const words = getMeaningfulWords(normalized);
 
   for (const category of CATEGORY_ALIASES) {
     if (category.terms.some((term) => normalized.includes(term))) {
+      return category.value;
+    }
+
+    if (category.terms.some((term) => words.some((word) => areSimilarTerms(word, term)))) {
       return category.value;
     }
   }
@@ -96,16 +218,34 @@ function detectCategory(message) {
 
 function detectGreeting(message) {
   const normalized = normalizeText(message);
-  return ["hola", "buenas", "buenos dias", "buenas tardes", "buenas noches", "hey"].some((term) =>
-    normalized === term || normalized.startsWith(`${term} `)
+  return ["hola", "holi", "buenas", "buenos dias", "buenas tardes", "buenas noches", "hey", "hello"].some(
+    (term) => normalized === term || normalized.startsWith(`${term} `)
   );
 }
 
 function detectFaq(message) {
   const normalized = normalizeText(message);
+  const messageWords = getMeaningfulWords(normalized);
+
+  const directMatch = FAQ_ENTRIES.find((entry) =>
+    entry.patterns.some((pattern) => normalized.includes(pattern))
+  );
+
+  if (directMatch) {
+    return directMatch;
+  }
 
   return FAQ_ENTRIES.find((entry) =>
-    entry.patterns.some((pattern) => normalized.includes(pattern))
+    entry.patterns.some((pattern) => {
+      const patternWords = getMeaningfulWords(pattern);
+      if (!patternWords.length) return false;
+
+      const matches = patternWords.filter((patternWord) =>
+        messageWords.some((messageWord) => areSimilarTerms(messageWord, patternWord))
+      );
+
+      return matches.length >= Math.min(2, patternWords.length);
+    })
   ) || null;
 }
 
@@ -136,16 +276,29 @@ function extractCity(message) {
   return candidate;
 }
 
-function stripNoiseWords(message, category, city) {
+function detectUniversity(message) {
+  const normalized = normalizeText(message);
+
+  for (const [alias, value] of Object.entries(UNIVERSITY_ALIASES)) {
+    if (normalized.includes(alias) || areSimilarTerms(normalized, alias)) {
+      return value;
+    }
+  }
+
+  return "";
+}
+
+function stripNoiseWords(message, category, city, university) {
   const normalized = normalizeText(message);
   const stopWords = new Set([
+    "hola", "holi", "buenas", "hello",
     "quiero", "busco", "muestrame", "mostrar", "muestreme", "dame", "ver", "verme", "algo",
     "productos", "producto", "negocio", "negocios", "tienda", "tiendas", "local", "locales",
     "emprendedor", "emprendedores", "vendedor", "vendedores", "barato", "barata", "baratos", "baratas",
     "economico", "economica", "economicos", "economicas", "recomendacion", "recomendaciones",
     "recomiendas", "comprar", "compra", "puedo", "con", "poco", "dinero", "en", "de", "por", "para",
     "hay", "que", "me", "quiera", "necesito", "buscar", "precio", "precios", "ciudad", "ubicacion",
-    "ubicacion", "cerca", "menos", "maximo", "hasta", "entre", "desde", "mostrarme", "tal"
+    "cerca", "menos", "maximo", "hasta", "entre", "desde", "mostrarme", "tal", "cordobas", "cordoba"
   ]);
 
   const words = normalized
@@ -153,14 +306,23 @@ function stripNoiseWords(message, category, city) {
     .filter(Boolean)
     .filter((word) => !stopWords.has(word));
 
-  return words.filter((word) => word !== category && word !== city).join(" ").trim();
+  return words
+    .filter((word) => word !== category && word !== city && word !== university)
+    .join(" ")
+    .trim();
 }
 
 function detectIntent(message) {
   const normalized = normalizeText(message);
+
+  if (detectGreeting(normalized)) {
+    return { type: "greeting" };
+  }
+
   const faq = detectFaq(normalized);
   const category = detectCategory(normalized);
   const city = extractCity(normalized);
+  const university = detectUniversity(normalized);
   const { minPrice, maxPrice } = parsePriceRange(normalized);
   const needsNearby = detectLocationNeed(normalized);
 
@@ -202,13 +364,14 @@ function detectIntent(message) {
     normalized.includes("muestrame") ||
     Boolean(category);
 
-  const searchText = stripNoiseWords(normalized, category, city);
+  const searchText = stripNoiseWords(normalized, category, city, university);
 
   if (wantsBusinesses || needsNearby) {
     return {
       type: "business_search",
       category,
       city,
+      university,
       searchText,
       minPrice,
       maxPrice,
@@ -225,6 +388,7 @@ function detectIntent(message) {
       type: "cheap_products",
       category,
       city,
+      university,
       searchText,
       minPrice,
       maxPrice,
@@ -237,6 +401,7 @@ function detectIntent(message) {
       type: "recommend_products",
       category,
       city,
+      university,
       searchText,
       minPrice,
       maxPrice,
@@ -249,6 +414,7 @@ function detectIntent(message) {
       type: "product_search",
       category,
       city,
+      university,
       searchText,
       minPrice,
       maxPrice,
@@ -263,18 +429,23 @@ function detectIntent(message) {
     };
   }
 
-  if (detectGreeting(normalized)) {
-    return { type: "greeting" };
-  }
-
   return {
     type: "fallback",
     category,
     city,
+    university,
     searchText,
     minPrice,
     maxPrice,
     needsNearby
+  };
+}
+
+function buildCategoryClause(fieldName, category) {
+  const categoryTerms = CATEGORY_FILTER_GROUPS[category] || [category];
+  return {
+    clause: `(${categoryTerms.map(() => `LOWER(${fieldName}) LIKE ?`).join(" OR ")})`,
+    params: categoryTerms.map((term) => `%${term}%`)
   };
 }
 
@@ -285,17 +456,18 @@ function buildProductWhere({ searchText, category, city, minPrice, maxPrice }) {
   if (searchText) {
     const likeValue = `%${searchText}%`;
     conditions.push(`(
-      p.productName LIKE ?
-      OR p.description LIKE ?
-      OR c.categoryName LIKE ?
-      OR b.businessName LIKE ?
+      LOWER(p.productName) LIKE ?
+      OR LOWER(p.description) LIKE ?
+      OR LOWER(c.categoryName) LIKE ?
+      OR LOWER(b.businessName) LIKE ?
     )`);
     params.push(likeValue, likeValue, likeValue, likeValue);
   }
 
   if (category) {
-    conditions.push("LOWER(c.categoryName) LIKE ?");
-    params.push(`%${category}%`);
+    const categoryClause = buildCategoryClause("c.categoryName", category);
+    conditions.push(categoryClause.clause);
+    params.push(...categoryClause.params);
   }
 
   if (city) {
@@ -319,27 +491,28 @@ function buildProductWhere({ searchText, category, city, minPrice, maxPrice }) {
   };
 }
 
-function buildBusinessWhere({ searchText, category, city }) {
+function buildBusinessWhere({ searchText, category, city, university }) {
   const conditions = [];
   const params = [];
 
   if (searchText) {
     const likeValue = `%${searchText}%`;
     conditions.push(`(
-      b.businessName LIKE ?
-      OR b.description LIKE ?
-      OR b.city LIKE ?
+      LOWER(b.businessName) LIKE ?
+      OR LOWER(b.description) LIKE ?
+      OR LOWER(b.city) LIKE ?
+      OR LOWER(COALESCE(u.universityName, '')) LIKE ?
       OR EXISTS (
         SELECT 1
         FROM Products px
         WHERE px.businessID = b.businessID
           AND (
-            px.productName LIKE ?
-            OR px.description LIKE ?
+            LOWER(px.productName) LIKE ?
+            OR LOWER(px.description) LIKE ?
           )
       )
     )`);
-    params.push(likeValue, likeValue, likeValue, likeValue, likeValue);
+    params.push(likeValue, likeValue, likeValue, likeValue, likeValue, likeValue);
   }
 
   if (city) {
@@ -348,14 +521,20 @@ function buildBusinessWhere({ searchText, category, city }) {
   }
 
   if (category) {
+    const categoryClause = buildCategoryClause("c2.categoryName", category);
     conditions.push(`EXISTS (
       SELECT 1
       FROM Products p2
       INNER JOIN Categories c2 ON p2.categoryID = c2.categoryID
       WHERE p2.businessID = b.businessID
-        AND LOWER(c2.categoryName) LIKE ?
+        AND ${categoryClause.clause}
     )`);
-    params.push(`%${category}%`);
+    params.push(...categoryClause.params);
+  }
+
+  if (university) {
+    conditions.push("LOWER(COALESCE(u.universityName, '')) LIKE ?");
+    params.push(`%${university}%`);
   }
 
   return {
@@ -364,15 +543,17 @@ function buildBusinessWhere({ searchText, category, city }) {
   };
 }
 
-async function findProducts(filters, mode = "latest", limit = 4) {
+async function findProducts(filters, mode = "latest", limit = 6) {
   const queryParts = buildProductWhere(filters);
   let orderBy = "ORDER BY p.createdAt DESC, p.productID DESC";
+  const params = [...queryParts.params];
 
   if (mode === "cheap") {
     orderBy = "ORDER BY p.price ASC, p.productID DESC";
   }
 
   if (filters.searchText) {
+    const exact = normalizeText(filters.searchText);
     orderBy = `
       ORDER BY
         CASE
@@ -383,12 +564,6 @@ async function findProducts(filters, mode = "latest", limit = 4) {
         ${mode === "cheap" ? "p.price ASC," : ""}
         p.productID DESC
     `;
-  }
-
-  const params = [...queryParts.params];
-
-  if (filters.searchText) {
-    const exact = normalizeText(filters.searchText);
     params.push(exact, `%${exact}%`);
   }
 
@@ -432,7 +607,7 @@ async function findProducts(filters, mode = "latest", limit = 4) {
     priceLabel: formatPrice(item.price),
     stock: Number(item.stock || 0),
     availabilityStatus: item.availabilityStatus || "",
-    categoryName: item.categoryName || "Sin categoria",
+    categoryName: item.categoryName || "Sin categoría",
     businessID: item.businessID,
     businessName: item.businessName || "",
     city: item.city || "",
@@ -441,7 +616,7 @@ async function findProducts(filters, mode = "latest", limit = 4) {
   }));
 }
 
-async function findBusinesses(filters, limit = 4) {
+async function findBusinesses(filters, limit = 6) {
   const queryParts = buildBusinessWhere(filters);
 
   const [rows] = await pool.query(
@@ -453,6 +628,7 @@ async function findBusinesses(filters, limit = 4) {
       b.logoURL,
       b.contactPhone,
       b.city,
+      u.universityName,
       (
         SELECT c.categoryName
         FROM Products p
@@ -462,6 +638,8 @@ async function findBusinesses(filters, limit = 4) {
         LIMIT 1
       ) AS categoryName
     FROM BusinessProfiles b
+    LEFT JOIN StudentProfiles sp ON b.userID = sp.userID
+    LEFT JOIN Universities u ON sp.universityID = u.universityID
     ${queryParts.where}
     ORDER BY
       CASE
@@ -478,8 +656,9 @@ async function findBusinesses(filters, limit = 4) {
     businessID: item.businessID,
     businessName: item.businessName,
     description: item.description || "",
-    categoryName: item.categoryName || "Sin categoria",
+    categoryName: item.categoryName || "Sin categoría",
     city: item.city || "",
+    universityName: item.universityName || "",
     contactPhone: item.contactPhone || "",
     logoURL: item.logoURL || "/assets/images/logo-seller-default.png",
     detailPath: `./seller-profile.html?id=${encodeURIComponent(item.businessID)}`
@@ -506,17 +685,26 @@ async function getCatalogHints() {
     ORDER BY productName ASC
   `);
 
+  const [universityRows] = await pool.query(`
+    SELECT universityName
+    FROM Universities
+    ORDER BY universityName ASC
+  `);
+
   return {
     categories: categoryRows.map((item) => String(item.categoryName || "").trim()).filter(Boolean),
     cities: cityRows.map((item) => String(item.city || "").trim()).filter(Boolean),
-    products: productRows.map((item) => String(item.productName || "").trim()).filter(Boolean)
+    products: productRows.map((item) => String(item.productName || "").trim()).filter(Boolean),
+    universities: universityRows.map((item) => String(item.universityName || "").trim()).filter(Boolean)
   };
 }
 
 function detectCategoryFromCatalog(message, categories) {
-  const normalized = normalizeText(message);
-  const match = categories.find((categoryName) => normalized.includes(normalizeText(categoryName)));
-  return match ? normalizeText(match) : detectCategory(normalized);
+  const directCategory = detectCategory(message);
+  if (directCategory) return directCategory;
+
+  const match = findBestCatalogMatch(message, categories, { minimumScore: 3 });
+  return match ? normalizeText(match) : "";
 }
 
 function detectCityFromCatalog(message, cities) {
@@ -527,25 +715,27 @@ function detectCityFromCatalog(message, cities) {
     return normalizeText(directMatch);
   }
 
-  return extractCity(normalized);
-}
-
-function detectProductFromCatalog(message, products) {
-  const normalized = normalizeText(message);
-  let bestMatch = "";
-
-  for (const productName of products) {
-    const normalizedProduct = normalizeText(productName);
-    if (!normalizedProduct) continue;
-
-    if (normalized.includes(normalizedProduct)) {
-      if (normalizedProduct.length > bestMatch.length) {
-        bestMatch = normalizedProduct;
-      }
+  const extractedCity = extractCity(normalized);
+  if (extractedCity) {
+    const fuzzyExtractedCity = findBestCatalogMatch(extractedCity, cities, { minimumScore: 2 });
+    if (fuzzyExtractedCity) {
+      return fuzzyExtractedCity;
     }
   }
 
-  return bestMatch;
+  return findBestCatalogMatch(normalized, cities, { minimumScore: 2 }) || extractedCity;
+}
+
+function detectProductFromCatalog(message, products) {
+  return findBestCatalogMatch(message, products, { minimumScore: 4 });
+}
+
+function detectUniversityFromCatalog(message, universities) {
+  const alias = detectUniversity(message);
+  if (alias) return alias;
+
+  const match = findBestCatalogMatch(message, universities, { minimumScore: 2 });
+  return match ? normalizeText(match) : "";
 }
 
 function enrichIntentWithCatalog(intent, message, catalogHints) {
@@ -554,12 +744,19 @@ function enrichIntentWithCatalog(intent, message, catalogHints) {
   const category = intent.category || detectCategoryFromCatalog(message, catalogHints.categories);
   const city = intent.city || detectCityFromCatalog(message, catalogHints.cities);
   const specificProduct = detectProductFromCatalog(message, catalogHints.products);
+  const university = intent.university || detectUniversityFromCatalog(message, catalogHints.universities);
+  const originalSearchText = intent.searchText || "";
+  const refinedSearchText =
+    specificProduct ||
+    findBestCatalogMatch(originalSearchText, catalogHints.products, { minimumScore: 2 }) ||
+    originalSearchText;
 
   return {
     ...intent,
     category,
     city,
-    searchText: intent.searchText || specificProduct
+    university,
+    searchText: refinedSearchText
   };
 }
 
@@ -627,30 +824,30 @@ async function getUserChatProfile(userID) {
 
 function buildGreetingReply(profile) {
   if (!profile?.user) {
-    return "Hola, soy Clicky. Puedo ayudarte a encontrar productos, negocios y explicarte como funciona Dale Click.";
+    return "\u00a1Hola! Soy Clicky. \u00bfEn qu\u00e9 puedo ayudarte hoy? Puedo buscar productos, negocios y explicarte c\u00f3mo funciona Dale Click.";
   }
 
   const firstName = profile.user.firstName || profile.user.username || "usuario";
   const reservationCount = Array.isArray(profile.reservations) ? profile.reservations.length : 0;
 
   if (!reservationCount) {
-    return `Hola, ${firstName}. Soy Clicky y puedo ayudarte a encontrar productos, negocios o explicarte como reservar dentro de Dale Click.`;
+    return `\u00a1Hola, ${firstName}! Soy Clicky. \u00bfEn qu\u00e9 puedo ayudarte hoy? Puedo buscar productos, negocios o explicarte c\u00f3mo reservar dentro de Dale Click.`;
   }
 
-  return `Hola, ${firstName}. Veo que ya has usado Dale Click. Si quieres, puedo ayudarte a buscar nuevos productos o revisar el estado general de tus reservas.`;
+  return `\u00a1Hola, ${firstName}! Veo que ya has usado Dale Click. Si quieres, puedo ayudarte a buscar nuevos productos o revisar el estado general de tus reservas.`;
 }
 
 function buildReservationsReply(profile) {
   if (!profile?.user) {
     return {
-      reply: "Para revisar tus reservas necesitas iniciar sesion en Dale Click.",
+      reply: "Para revisar tus reservas necesitas iniciar sesi\u00f3n en Dale Click.",
       reservations: []
     };
   }
 
   if (!profile.reservations?.length) {
     return {
-      reply: "No encontre reservas recientes en tu cuenta. Si quieres, te ayudo a buscar algo para apartar.",
+      reply: "No encontr\u00e9 reservas recientes en tu cuenta. Si quieres, te ayudo a buscar algo para apartar.",
       reservations: []
     };
   }
@@ -660,17 +857,17 @@ function buildReservationsReply(profile) {
     .join(", ");
 
   return {
-    reply: `Estas son tus reservas mas recientes: ${summary}. Si quieres, tambien puedo ayudarte a encontrar productos parecidos.`,
+    reply: `Estas son tus reservas m\u00e1s recientes: ${summary}. Si quieres, tambi\u00e9n puedo ayudarte a encontrar productos parecidos.`,
     reservations: profile.reservations
   };
 }
 
 function buildLocationPromptReply(intentType) {
   if (intentType === "business_search") {
-    return "Puedo recomendarte negocios cercanos, pero necesito que me indiques una ciudad o ubicacion de referencia, por ejemplo: Managua, Leon o Esteli.";
+    return "Puedo recomendarte negocios cercanos, pero necesito que me indiques una ciudad o ubicaci\u00f3n de referencia, por ejemplo: Managua, Le\u00f3n o Estel\u00ed.";
   }
 
-  return "Puedo buscar productos cercanos, pero necesito una ciudad o ubicacion de referencia. Por ejemplo: Managua, Granada o Carazo.";
+  return "Puedo buscar productos cercanos, pero necesito una ciudad o ubicaci\u00f3n de referencia. Por ejemplo: Managua, Granada o Carazo.";
 }
 
 function buildProductReply(intent, products, filters) {
@@ -680,26 +877,26 @@ function buildProductReply(intent, products, filters) {
     }
 
     if (intent === "cheap_products") {
-      return "No encontre productos economicos con esos filtros. Puedes probar otra categoria, ciudad o ampliar el presupuesto.";
+      return "No encontr\u00e9 productos econ\u00f3micos con esos filtros. Puedes probar otra categor\u00eda, ciudad o ampliar el presupuesto.";
     }
 
     if (intent === "recommend_products") {
-      return "No encontre recomendaciones exactas con esos datos, pero puedes probar otra categoria o ciudad para mostrarte mas opciones.";
+      return "No encontr\u00e9 recomendaciones exactas con esos datos, pero puedes probar otra categor\u00eda o ciudad para mostrarte m\u00e1s opciones.";
     }
 
     if (filters.searchText) {
-      return `No encontre productos que coincidan con "${filters.searchText}". Puedes intentar con otro nombre, otra ciudad o un rango de precio diferente.`;
+      return `No encontr\u00e9 productos que coincidan con "${filters.searchText}". Puedes intentar con otro nombre, otra ciudad o un rango de precio diferente.`;
     }
 
-    return "No encontre productos que coincidan con lo que buscas. Puedes intentar con otra categoria, ciudad o rango de precio.";
+    return "No encontr\u00e9 productos que coincidan con lo que buscas. Puedes intentar con otra categor\u00eda, ciudad o rango de precio.";
   }
 
   const intro =
     intent === "cheap_products"
-      ? "Te comparto algunas opciones economicas"
+      ? "Te comparto algunas opciones econ\u00f3micas"
       : intent === "recommend_products"
         ? "Estas opciones pueden interesarte"
-        : "Encontre estos productos para ti";
+        : "Encontr\u00e9 estos productos para ti";
 
   const contextParts = [];
 
@@ -733,7 +930,7 @@ function buildBusinessReply(businesses, filters) {
   }
 
   if (!businesses.length) {
-    return "No encontre negocios que coincidan con esa busqueda. Puedes intentar con otra ciudad, categoria o producto de referencia.";
+    return "No encontr\u00e9 negocios que coincidan con esa b\u00fasqueda. Puedes intentar con otra ciudad, categor\u00eda, universidad o producto de referencia.";
   }
 
   const contextParts = [];
@@ -750,8 +947,12 @@ function buildBusinessReply(businesses, filters) {
     contextParts.push(filters.needsNearby ? `cerca de ${toTitleCase(filters.city)}` : `en ${toTitleCase(filters.city)}`);
   }
 
+  if (filters.university) {
+    contextParts.push(`en ${toTitleCase(filters.university)}`);
+  }
+
   const contextText = contextParts.length ? ` ${contextParts.join(" ")}` : "";
-  return `Encontre estos negocios${contextText}. Puedes entrar a su perfil para ver sus productos y datos de contacto.`;
+  return `Encontr\u00e9 estos negocios${contextText}. Puedes entrar a su perfil para ver sus productos y datos de contacto.`;
 }
 
 function buildFaqResponse(faq) {
@@ -831,7 +1032,7 @@ export async function handleChatbotMessage(req, res) {
     if (intent.type === "business_search") {
       const businesses = intent.needsNearby && !intent.city
         ? []
-        : await findBusinesses(intent, 4);
+        : await findBusinesses(intent, 6);
 
       return res.json({
         ok: true,
@@ -849,7 +1050,7 @@ export async function handleChatbotMessage(req, res) {
       const searchMode = intent.type === "cheap_products" ? "cheap" : "latest";
       const products = intent.needsNearby && !intent.city
         ? []
-        : await findProducts(intent, searchMode, 4);
+        : await findProducts(intent, searchMode, 6);
 
       if (!products.length && intent.type === "fallback") {
         const faq = detectFaq(rawMessage);
@@ -858,13 +1059,18 @@ export async function handleChatbotMessage(req, res) {
         }
       }
 
+      const businesses =
+        intent.category === "comida" || intent.type === "recommend_products"
+          ? await findBusinesses(intent, 4)
+          : [];
+
       return res.json({
         ok: true,
         reply: buildProductReply(intent.type, products, intent),
         intent: intent.type,
         assistantName: CHATBOT_NAME,
         products,
-        businesses: [],
+        businesses,
         reservations: [],
         suggestions: DEFAULT_SUGGESTIONS
       });
@@ -873,7 +1079,7 @@ export async function handleChatbotMessage(req, res) {
     return res.json({
       ok: true,
       reply:
-        "Puedo ayudarte a encontrar productos, negocios o explicarte como funciona Dale Click. Dime que buscas y te ayudo.",
+        "Puedo ayudarte a encontrar productos, negocios o explicarte c\u00f3mo funciona Dale Click. Dime qu\u00e9 buscas y te ayudo.",
       intent: "fallback",
       assistantName: CHATBOT_NAME,
       products: [],

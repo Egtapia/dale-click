@@ -1,12 +1,51 @@
 export const CHATBOT_NAME = "Clicky";
 
 export const CATEGORY_ALIASES = [
-  { value: "alimentos", terms: ["comida", "comer", "snack", "snacks", "postre", "postres", "alimento", "alimentos", "bebida", "bebidas"] },
-  { value: "tecnologia", terms: ["tecnologia", "tecnologia", "tech", "celular", "celulares", "audifono", "audifonos", "laptop", "computadora", "gadget", "gadgets"] },
-  { value: "ropa", terms: ["ropa", "camisa", "camisas", "camiseta", "camisetas", "playera", "playeras", "pantalon", "pantalones", "vestido", "vestidos"] },
-  { value: "belleza", terms: ["belleza", "maquillaje", "cosmetico", "cosmeticos", "cuidado personal", "perfume", "perfumes", "skincare"] },
-  { value: "hogar", terms: ["hogar", "casa", "decoracion", "decoracion", "mueble", "muebles", "cocina"] },
-  { value: "servicios", terms: ["servicio", "servicios", "impresion", "impresiones", "diseno", "diseno", "asesoria", "reparacion"] }
+  {
+    value: "comida",
+    terms: [
+      "comida", "comer", "snack", "snacks", "postre", "postres", "alimento", "alimentos",
+      "bebida", "bebidas", "restaurante", "restaurantes", "cafeteria", "cafeterias",
+      "hamburguesa", "hamburguesas", "pizza", "pizzas", "pollo", "tacos", "antojito", "antojitos"
+    ]
+  },
+  {
+    value: "tecnologia",
+    terms: [
+      "tecnologia", "tech", "celular", "celulares", "telefono", "telefonos", "audifono",
+      "audifonos", "laptop", "laptops", "computadora", "computadoras", "gadget", "gadgets",
+      "cargador", "cargadores", "teclado", "teclados", "mouse", "mouses"
+    ]
+  },
+  {
+    value: "ropa",
+    terms: [
+      "ropa", "camisa", "camisas", "camiseta", "camisetas", "playera", "playeras",
+      "blusa", "blusas", "pantalon", "pantalones", "jean", "jeans", "vestido", "vestidos",
+      "falda", "faldas", "short", "shorts", "zapato", "zapatos"
+    ]
+  },
+  {
+    value: "belleza",
+    terms: [
+      "belleza", "maquillaje", "cosmetico", "cosmeticos", "cuidado personal", "perfume",
+      "perfumes", "skincare", "base", "labial", "labiales", "rimel", "crema", "cremas"
+    ]
+  },
+  {
+    value: "hogar",
+    terms: [
+      "hogar", "casa", "decoracion", "mueble", "muebles", "cocina", "vajilla", "lampara",
+      "lamparas", "almohada", "almohadas", "organizador", "organizadores"
+    ]
+  },
+  {
+    value: "servicios",
+    terms: [
+      "servicio", "servicios", "impresion", "impresiones", "diseno", "asesoria",
+      "reparacion", "reparaciones", "tutoria", "tutorias", "clases", "delivery academico"
+    ]
+  }
 ];
 
 export const FAQ_ENTRIES = [
@@ -80,8 +119,7 @@ export const FAQ_ENTRIES = [
 
 export const DEFAULT_SUGGESTIONS = [
   "Quiero algo barato",
-  "Muestrame comida",
+  "Muéstrame comida",
   "Busco ropa",
   "Quiero ver negocios locales"
 ];
-
