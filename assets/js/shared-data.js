@@ -229,7 +229,7 @@ window.DALECLICK_DATA = {
       categoryName: "Alimentos",
       categoryValue: "alimentos",
       imageURLs: [
-        "../assets/images/producto-default.jpg"
+        "/assets/images/producto-default.svg"
       ]
     },
     {
@@ -243,7 +243,7 @@ window.DALECLICK_DATA = {
       categoryName: "Servicios",
       categoryValue: "servicios",
       imageURLs: [
-        "../assets/images/producto-default.jpg"
+        "/assets/images/producto-default.svg"
       ]
     }
   ]

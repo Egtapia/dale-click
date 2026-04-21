@@ -1,4 +1,7 @@
 document.addEventListener("DOMContentLoaded", async () => {
+  const API_URL = "/api/products";
+  const CATEGORIES_API_URL = "/api/products/categories";
+  const DEFAULT_PRODUCT_IMAGE = "/assets/images/producto-default.svg";
   const productsGrid = document.getElementById("all-products-grid");
   const resultsCount = document.getElementById("products-results-count");
   const noResultsMessage = document.getElementById("all-products-no-results");
@@ -8,8 +11,6 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   if (!productsGrid) return;
 
-  const API_URL = "http://localhost:3001/api/products";
-  const CATEGORIES_API_URL = "http://localhost:3001/api/products/categories";
   let allProducts = [];
 
   function escapeHtml(text) {
@@ -46,7 +47,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (product.imageURL && String(product.imageURL).trim() !== "") {
       return product.imageURL;
     }
-    return "../assets/images/producto-default.jpg";
+    return DEFAULT_PRODUCT_IMAGE;
   }
 
   function getCategoryLabel(product) {
@@ -163,7 +164,7 @@ document.addEventListener("DOMContentLoaded", async () => {
           src="${imageURL}"
           alt="${productName}"
           class="product-image"
-          onerror="this.src='../assets/images/producto-default.jpg'"
+          onerror="this.src='${DEFAULT_PRODUCT_IMAGE}'"
         />
         <div class="product-info">
           <p class="product-category">${categoryLabel}</p>

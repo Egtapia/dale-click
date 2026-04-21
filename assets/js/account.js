@@ -167,7 +167,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const infoNationalID = document.getElementById("info-national-id");
 
     try {
-      const response = await fetch("http://localhost:3001/api/auth/me", {
+      const response = await fetch("/api/auth/me", {
         method: "GET",
         headers: {
           "Authorization": `Bearer ${token}`

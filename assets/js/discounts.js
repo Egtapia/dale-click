@@ -5,7 +5,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const universityFilter = document.getElementById("discounts-university-filter");
   const noResultsMessage = document.getElementById("discounts-no-results");
   const resultsCount = document.getElementById("discounts-results-count");
-  const PRODUCTS_API_URL = "http://localhost:3001/api/products";
+  const PRODUCTS_API_URL = "/api/products";
 
   if (!discountsGrid) return;
 

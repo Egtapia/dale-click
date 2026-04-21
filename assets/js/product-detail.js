@@ -1,4 +1,5 @@
-const PRODUCT_API_BASE = "http://localhost:3001/api/products";
+const PRODUCT_API_BASE = "/api/products";
+const DEFAULT_PRODUCT_IMAGE = "/assets/images/producto-default.svg";
 const WALLET_ENABLED_KEY = "daleclick_wallet_enabled";
 const WALLET_BUDGET_KEY = "daleclick_wallet_budget";
 const WALLET_RESERVED_KEY = "daleclick_wallet_reserved_total";
@@ -32,7 +33,7 @@ function escapeHtml(text) {
 function getValidImageUrl(url) {
   return url && String(url).trim() !== ""
     ? String(url).trim()
-    : "../assets/images/producto-default.jpg";
+    : DEFAULT_PRODUCT_IMAGE;
 }
 
 function normalizeUrl(value, baseUrl = "") {
@@ -254,7 +255,7 @@ function renderGallery(images, productName, preferredImageUrl) {
       <img
         src="${image.imageURL}"
         alt="${productName} ${index + 1}"
-        onerror="this.src='../assets/images/producto-default.jpg'"
+        onerror="this.src='${DEFAULT_PRODUCT_IMAGE}'"
       />
     `;
 
@@ -278,7 +279,7 @@ function buildRelatedProductCard(product) {
           src="${escapeHtml(getValidImageUrl(product.imageURL))}"
           alt="${escapeHtml(product.productName || "Producto")}"
           loading="lazy"
-          onerror="this.src='../assets/images/producto-default.jpg'"
+          onerror="this.src='${DEFAULT_PRODUCT_IMAGE}'"
         />
       </div>
 
@@ -443,7 +444,7 @@ function bindReserveButton(product) {
     }
 
     try {
-      const response = await fetch("http://localhost:3001/api/reservations", {
+      const response = await fetch("/api/reservations", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -498,9 +499,9 @@ function renderProductDetail(product) {
           <img
             id="product-main-image"
             class="product-detail-image"
-            src="../assets/images/producto-default.jpg"
+            src="${DEFAULT_PRODUCT_IMAGE}"
             alt="${safeText(product.productName, "Producto")}"
-            onerror="this.src='../assets/images/producto-default.jpg'"
+            onerror="this.src='${DEFAULT_PRODUCT_IMAGE}'"
           />
         </div>
 

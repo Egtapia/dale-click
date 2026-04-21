@@ -1,4 +1,5 @@
 document.addEventListener("DOMContentLoaded", () => {
+  const DEFAULT_PRODUCT_IMAGE = "/assets/images/producto-default.svg";
   const WALLET_RESERVED_KEY = "daleclick_wallet_reserved_total";
 
   function getSession() {
@@ -180,10 +181,10 @@ document.addEventListener("DOMContentLoaded", () => {
         return `
           <article class="reservation-card">
             <img
-              src="${reservation.imageURL || "../assets/images/producto-default.jpg"}"
+              src="${reservation.imageURL || DEFAULT_PRODUCT_IMAGE}"
               alt="${reservation.productName}"
               class="reservation-image"
-              onerror="this.src='../assets/images/producto-default.jpg'"
+              onerror="this.src='${DEFAULT_PRODUCT_IMAGE}'"
             />
 
             <div class="reservation-content">
@@ -220,7 +221,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!confirmCancel) return;
 
     try {
-      const response = await fetch(`http://localhost:3001/api/reservations/${orderID}/cancel`, {
+      const response = await fetch(`/api/reservations/${orderID}/cancel`, {
         method: "PATCH",
         headers: {
           "Authorization": `Bearer ${token}`,
@@ -243,7 +244,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   async function loadReservations() {
     try {
-      const response = await fetch("http://localhost:3001/api/reservations/mine", {
+      const response = await fetch("/api/reservations/mine", {
         method: "GET",
         headers: {
           "Authorization": `Bearer ${token}`

@@ -19,8 +19,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   if (!sellersGrid) return;
 
-  const API_BASE = "http://localhost:3001/api/businesses";
-  const DEFAULT_LOGO = "../assets/images/logo-seller-default.png";
+  const API_BASE = "/api/businesses";
+  const DEFAULT_LOGO = "/assets/images/logo-seller-default.svg";
   let allSellers = [];
 
   function normalizeText(text) {

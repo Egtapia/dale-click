@@ -1,5 +1,6 @@
 const PRODUCTS_API_URL = "/api/products";
 const CATEGORIES_API_URL = "/api/products/categories";
+const DEFAULT_PRODUCT_IMAGE = "/assets/images/producto-default.svg";
 let allHomeProducts = [];
 const DEFAULT_PRODUCTS_SECTION_TITLE = "Productos destacados";
 const DEFAULT_PRODUCTS_SECTION_DESCRIPTION =
@@ -106,7 +107,7 @@ function getImageUrl(product) {
     return product.imageURL;
   }
 
-  return "../assets/images/producto-default.jpg";
+  return DEFAULT_PRODUCT_IMAGE;
 }
 
 function syncCategoryDropdown() {
@@ -273,7 +274,7 @@ function renderProducts(products, limit = 12) {
           src="${escapeHtml(getImageUrl(product))}"
           alt="${escapeHtml(product.productName || "Producto")}"
           loading="lazy"
-          onerror="this.src='../assets/images/producto-default.jpg'"
+          onerror="this.src='${DEFAULT_PRODUCT_IMAGE}'"
         />
       </div>
 

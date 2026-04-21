@@ -13,34 +13,67 @@ dotenv.config();
 
 const app = express();
 
-// Para usar __dirname con ES Modules
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+const BUYER_DIR = path.join(__dirname, "../buyer");
+const ASSETS_DIR = path.join(__dirname, "../assets");
 
-// Middlewares
+function setNoStoreHeaders(res) {
+  res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate");
+  res.setHeader("Pragma", "no-cache");
+  res.setHeader("Expires", "0");
+}
+
+function setRevalidateHeaders(res) {
+  res.setHeader("Cache-Control", "public, max-age=0, must-revalidate");
+}
+
+function setStaticHeaders(res, filePath) {
+  const extension = path.extname(filePath).toLowerCase();
+
+  if (extension === ".html") {
+    setNoStoreHeaders(res);
+    return;
+  }
+
+  if ([".js", ".css", ".png", ".jpg", ".jpeg", ".gif", ".svg", ".webp", ".ico"].includes(extension)) {
+    setRevalidateHeaders(res);
+  }
+}
+
 app.use(cors());
 app.use(express.json());
 
-// 🔥 SERVIR FRONTEND (IMPORTANTÍSIMO)
-app.use(express.static(path.join(__dirname, "../buyer")));
+app.use(express.static(BUYER_DIR, {
+  extensions: ["html"],
+  setHeaders: setStaticHeaders
+}));
 
-// Si tienes assets fuera (como /assets/js)
-app.use("/assets", express.static(path.join(__dirname, "../assets")));
+app.use("/assets", express.static(ASSETS_DIR, {
+  setHeaders: setStaticHeaders
+}));
+app.use("/assets", (req, res) => {
+  res.status(404).send("Asset no encontrado.");
+});
 
-// 🔥 RUTAS API
 app.use("/api/auth", authRoutes);
 app.use("/api/reservations", reservationRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/businesses", businessRoutes);
 
-// 🔥 ROOT → abre index.html
 app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "../buyer/index.html"));
+  res.sendFile(path.join(BUYER_DIR, "index.html"));
 });
 
-// 🔥 CUALQUIER RUTA (SPA fallback opcional pero recomendado)
-app.get("*", (req, res) => {
-  res.sendFile(path.join(__dirname, "../buyer/index.html"));
+app.use("/api", (req, res) => {
+  res.status(404).json({
+    ok: false,
+    message: "Ruta API no encontrada."
+  });
+});
+
+app.use((req, res) => {
+  res.status(404).send("Ruta no encontrada.");
 });
 
 const PORT = process.env.PORT || 3001;

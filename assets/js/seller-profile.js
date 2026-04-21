@@ -7,7 +7,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
   if (!profileCard || !categoriesTabs || !productsGrid || !productsCount || !noResultsMessage) return;
 
-  const API_BASE = "http://localhost:3001/api/businesses";
+  const API_BASE = "/api/businesses";
+  const DEFAULT_LOGO = "/assets/images/logo-seller-default.svg";
+  const DEFAULT_PRODUCT_IMAGE = "/assets/images/producto-default.svg";
 
   let activeCategory = "todas";
   let currentBusiness = null;
@@ -38,7 +40,7 @@ document.addEventListener("DOMContentLoaded", () => {
   function getImageUrl(url) {
     return url && String(url).trim() !== ""
       ? url
-      : "../assets/images/logo-seller-default.png";
+      : DEFAULT_LOGO;
   }
 
   function normalizeUrl(value, baseUrl = "") {
@@ -166,7 +168,7 @@ document.addEventListener("DOMContentLoaded", () => {
           src="${escapeHtml(getImageUrl(business.logoURL))}"
           alt="${escapeHtml(business.businessName)}"
           class="seller-profile-logo"
-          onerror="this.src='../assets/images/logo-seller-default.png'"
+          onerror="this.src='${DEFAULT_LOGO}'"
         />
       </div>
 
@@ -283,10 +285,10 @@ document.addEventListener("DOMContentLoaded", () => {
     return `
       <article class="product-card">
         <img
-          src="${escapeHtml(product.imageURL || "../assets/images/producto-default.jpg")}"
+          src="${escapeHtml(product.imageURL || DEFAULT_PRODUCT_IMAGE)}"
           alt="${escapeHtml(product.productName)}"
           class="product-image"
-          onerror="this.src='../assets/images/producto-default.jpg'"
+          onerror="this.src='${DEFAULT_PRODUCT_IMAGE}'"
         />
         <div class="product-info">
           <p class="product-category">${escapeHtml(product.categoryName)}</p>

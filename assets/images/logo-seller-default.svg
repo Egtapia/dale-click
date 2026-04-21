@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="600" height="600" viewBox="0 0 600 600" role="img" aria-labelledby="title desc">
+  <title id="title">Logo de negocio no disponible</title>
+  <desc id="desc">Marcador visual cuando un emprendimiento no tiene logo.</desc>
+  <defs>
+    <linearGradient id="seller-bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#f3f7fb" />
+      <stop offset="100%" stop-color="#dce9f8" />
+    </linearGradient>
+  </defs>
+  <rect width="600" height="600" rx="64" fill="url(#seller-bg)" />
+  <circle cx="300" cy="220" r="96" fill="#1f5cb3" opacity="0.95" />
+  <path d="M186 438c18-78 79-128 114-128s96 50 114 128" fill="#1f5cb3" opacity="0.95" />
+  <text x="300" y="530" fill="#183a6b" font-family="Arial, sans-serif" font-size="30" text-anchor="middle">Negocio sin logo</text>
+</svg>

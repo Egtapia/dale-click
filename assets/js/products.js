@@ -4,7 +4,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   if (!productsGrid) return;
 
   const USE_API = false;
-  const API_URL = "http://localhost:3000/api/products/featured";
+  const API_URL = "/api/products/featured";
 
   const mockProducts = [
     {
@@ -145,7 +145,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       return product.imageURL;
     }
 
-    return "../assets/images/producto-default.jpg";
+    return "/assets/images/producto-default.svg";
   }
 
   function getCategoryLabel(product) {
@@ -173,7 +173,7 @@ document.addEventListener("DOMContentLoaded", async () => {
           src="${imageURL}"
           alt="${productName}"
           class="product-image"
-          onerror="this.src='../assets/images/producto-default.jpg'"
+          onerror="this.src='/assets/images/producto-default.svg'"
         />
         <div class="product-info">
           <p class="product-category">${categoryLabel}</p>

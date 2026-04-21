@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600" viewBox="0 0 800 600" role="img" aria-labelledby="title desc">
+  <title id="title">Imagen de producto no disponible</title>
+  <desc id="desc">Marcador visual cuando un producto no tiene imagen.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#f7f4ef" />
+      <stop offset="100%" stop-color="#ece4d8" />
+    </linearGradient>
+  </defs>
+  <rect width="800" height="600" rx="36" fill="url(#bg)" />
+  <rect x="120" y="110" width="560" height="380" rx="28" fill="#ffffff" opacity="0.96" />
+  <rect x="165" y="165" width="470" height="240" rx="22" fill="#efe6da" />
+  <circle cx="285" cy="235" r="42" fill="#d9cab6" />
+  <path d="M220 375l98-102c14-14 38-14 52 0l56 56 70-72c14-14 38-14 52 0l82 118H220z" fill="#cfb798" />
+  <text x="400" y="455" fill="#755f45" font-family="Arial, sans-serif" font-size="30" text-anchor="middle">Producto sin imagen</text>
+</svg>
