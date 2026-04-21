@@ -223,6 +223,40 @@ function detectGreeting(message) {
   );
 }
 
+function detectSocialIntent(message) {
+  const normalized = normalizeText(message);
+
+  const wellbeingPatterns = [
+    "como estas", "como te va", "que tal", "todo bien", "como sigues", "como amaneciste"
+  ];
+  if (wellbeingPatterns.some((pattern) => normalized.includes(pattern))) {
+    return "wellbeing";
+  }
+
+  const thanksPatterns = [
+    "gracias", "muchas gracias", "te agradezco", "thanks", "mil gracias"
+  ];
+  if (thanksPatterns.some((pattern) => normalized.includes(pattern))) {
+    return "thanks";
+  }
+
+  const goodbyePatterns = [
+    "adios", "hasta luego", "nos vemos", "bye", "chao", "hasta pronto", "me voy"
+  ];
+  if (goodbyePatterns.some((pattern) => normalized.includes(pattern))) {
+    return "goodbye";
+  }
+
+  const offensivePatterns = [
+    "tonto", "idiota", "estupido", "imbecil", "callate", "te odio", "odio este bot", "maldito"
+  ];
+  if (offensivePatterns.some((pattern) => normalized.includes(pattern))) {
+    return "deescalate";
+  }
+
+  return "";
+}
+
 function detectFaq(message) {
   const normalized = normalizeText(message);
   const messageWords = getMeaningfulWords(normalized);
@@ -317,6 +351,11 @@ function detectIntent(message) {
 
   if (detectGreeting(normalized)) {
     return { type: "greeting" };
+  }
+
+  const socialIntent = detectSocialIntent(normalized);
+  if (socialIntent) {
+    return { type: socialIntent };
   }
 
   const faq = detectFaq(normalized);
@@ -665,6 +704,144 @@ async function findBusinesses(filters, limit = 6) {
   }));
 }
 
+function buildAlternativeProductFilters(filters) {
+  const alternatives = [];
+
+  if (filters.maxPrice !== null || filters.minPrice !== null) {
+    alternatives.push({
+      ...filters,
+      minPrice: null,
+      maxPrice: null
+    });
+  }
+
+  if (filters.city || filters.university) {
+    alternatives.push({
+      ...filters,
+      city: "",
+      university: ""
+    });
+  }
+
+  if (filters.searchText && filters.category) {
+    alternatives.push({
+      ...filters,
+      searchText: "",
+      minPrice: null,
+      maxPrice: null
+    });
+  }
+
+  alternatives.push({
+    ...filters,
+    city: "",
+    university: "",
+    minPrice: null,
+    maxPrice: null
+  });
+
+  return alternatives.filter((candidate, index, array) => {
+    const signature = JSON.stringify(candidate);
+    return array.findIndex((item) => JSON.stringify(item) === signature) === index;
+  });
+}
+
+async function findProductMatches(intent) {
+  const preferredMode = intent.type === "cheap_products" ? "cheap" : "latest";
+  const exactProducts = intent.needsNearby && !intent.city
+    ? []
+    : await findProducts(intent, preferredMode, 6);
+
+  if (exactProducts.length || (intent.needsNearby && !intent.city)) {
+    return {
+      products: exactProducts,
+      replyMode: "exact",
+      appliedFilters: intent
+    };
+  }
+
+  for (const alternativeFilters of buildAlternativeProductFilters(intent)) {
+    const alternativeProducts = await findProducts(alternativeFilters, "cheap", 6);
+
+    if (alternativeProducts.length) {
+      return {
+        products: alternativeProducts,
+        replyMode: "alternative",
+        appliedFilters: alternativeFilters
+      };
+    }
+  }
+
+  return {
+    products: [],
+    replyMode: "empty",
+    appliedFilters: intent
+  };
+}
+
+function buildAlternativeBusinessFilters(filters) {
+  const alternatives = [];
+
+  if (filters.city || filters.university) {
+    alternatives.push({
+      ...filters,
+      city: "",
+      university: ""
+    });
+  }
+
+  if (filters.searchText && filters.category) {
+    alternatives.push({
+      ...filters,
+      searchText: ""
+    });
+  }
+
+  alternatives.push({
+    ...filters,
+    city: "",
+    university: "",
+    searchText: filters.searchText || ""
+  });
+
+  return alternatives.filter((candidate, index, array) => {
+    const signature = JSON.stringify(candidate);
+    return array.findIndex((item) => JSON.stringify(item) === signature) === index;
+  });
+}
+
+async function findBusinessMatches(intent) {
+  const exactBusinesses = intent.needsNearby && !intent.city
+    ? []
+    : await findBusinesses(intent, 6);
+
+  if (exactBusinesses.length || (intent.needsNearby && !intent.city)) {
+    return {
+      businesses: exactBusinesses,
+      replyMode: "exact",
+      appliedFilters: intent
+    };
+  }
+
+  for (const alternativeFilters of buildAlternativeBusinessFilters(intent)) {
+    const alternativeBusinesses = await findBusinesses(alternativeFilters, 6);
+
+    if (alternativeBusinesses.length) {
+      return {
+        businesses: alternativeBusinesses,
+        replyMode: "alternative",
+        appliedFilters: alternativeFilters
+      };
+    }
+  }
+
+  return {
+    businesses: [],
+    replyMode: "empty",
+    appliedFilters: intent
+  };
+}
+
 async function getCatalogHints() {
   const [categoryRows] = await pool.query(`
     SELECT categoryName
@@ -837,6 +1014,26 @@ function buildGreetingReply(profile) {
   return `\u00a1Hola, ${firstName}! Veo que ya has usado Dale Click. Si quieres, puedo ayudarte a buscar nuevos productos o revisar el estado general de tus reservas.`;
 }
 
+function buildSocialReply(intentType) {
+  if (intentType === "wellbeing") {
+    return "Estoy muy bien y lista para ayudarte. Si quieres, puedo buscar productos, negocios o resolver dudas sobre Dale Click.";
+  }
+
+  if (intentType === "thanks") {
+    return "Con gusto. Si necesitas algo más, aquí estoy para ayudarte.";
+  }
+
+  if (intentType === "goodbye") {
+    return "Hasta luego. Cuando quieras volver a buscar productos o negocios, aquí estaré.";
+  }
+
+  if (intentType === "deescalate") {
+    return "Puedo seguir ayudándote con respeto. Si me dices qué producto, negocio o duda tienes, con gusto te ayudo.";
+  }
+
+  return "Estoy aquí para ayudarte con lo que necesites dentro de Dale Click.";
+}
+
 function buildReservationsReply(profile) {
   if (!profile?.user) {
     return {
@@ -870,7 +1067,10 @@ function buildLocationPromptReply(intentType) {
   return "Puedo buscar productos cercanos, pero necesito una ciudad o ubicaci\u00f3n de referencia. Por ejemplo: Managua, Granada o Carazo.";
 }
 
-function buildProductReply(intent, products, filters) {
+function buildProductReply(intent, products, filters, options = {}) {
+  const replyMode = options.replyMode || "exact";
+  const appliedFilters = options.appliedFilters || filters;
+
   if (!products.length) {
     if (filters.needsNearby && !filters.city) {
       return buildLocationPromptReply(intent);
@@ -892,7 +1092,9 @@ function buildProductReply(intent, products, filters) {
   }
 
   const intro =
-    intent === "cheap_products"
+    replyMode === "alternative"
+      ? "No encontré una coincidencia exacta con todos los filtros, pero sí estas opciones cercanas"
+      : intent === "cheap_products"
       ? "Te comparto algunas opciones econ\u00f3micas"
       : intent === "recommend_products"
         ? "Estas opciones pueden interesarte"
@@ -900,31 +1102,39 @@ function buildProductReply(intent, products, filters) {
 
   const contextParts = [];
 
-  if (filters.searchText) {
-    contextParts.push(`relacionados con ${filters.searchText}`);
+  if (appliedFilters.searchText) {
+    contextParts.push(`relacionados con ${appliedFilters.searchText}`);
   }
 
-  if (filters.category) {
-    contextParts.push(`en ${filters.category}`);
+  if (appliedFilters.category) {
+    contextParts.push(`en ${appliedFilters.category}`);
   }
 
-  if (filters.city) {
-    contextParts.push(filters.needsNearby ? `cerca de ${toTitleCase(filters.city)}` : `en ${toTitleCase(filters.city)}`);
+  if (appliedFilters.city) {
+    contextParts.push(filters.needsNearby ? `cerca de ${toTitleCase(appliedFilters.city)}` : `en ${toTitleCase(appliedFilters.city)}`);
   }
 
-  if (filters.minPrice !== null && filters.maxPrice !== null) {
-    contextParts.push(`entre C$ ${filters.minPrice} y C$ ${filters.maxPrice}`);
-  } else if (filters.maxPrice !== null) {
-    contextParts.push(`por hasta C$ ${filters.maxPrice}`);
-  } else if (filters.minPrice !== null) {
-    contextParts.push(`desde C$ ${filters.minPrice}`);
+  if (appliedFilters.minPrice !== null && appliedFilters.maxPrice !== null) {
+    contextParts.push(`entre C$ ${appliedFilters.minPrice} y C$ ${appliedFilters.maxPrice}`);
+  } else if (appliedFilters.maxPrice !== null) {
+    contextParts.push(`por hasta C$ ${appliedFilters.maxPrice}`);
+  } else if (appliedFilters.minPrice !== null) {
+    contextParts.push(`desde C$ ${appliedFilters.minPrice}`);
   }
 
   const contextText = contextParts.length ? ` ${contextParts.join(" ")}` : "";
-  return `${intro}${contextText}. Recuerda que puedes reservar en la plataforma y pagar directamente al negocio al recoger el producto.`;
+  const closing =
+    replyMode === "alternative"
+      ? "Te las muestro para que puedas comparar alternativas parecidas a lo que pediste."
+      : "Recuerda que puedes reservar en la plataforma y pagar directamente al negocio al recoger el producto.";
+
+  return `${intro}${contextText}. ${closing}`;
 }
 
-function buildBusinessReply(businesses, filters) {
+function buildBusinessReply(businesses, filters, options = {}) {
+  const replyMode = options.replyMode || "exact";
+  const appliedFilters = options.appliedFilters || filters;
+
   if (filters.needsNearby && !filters.city) {
     return buildLocationPromptReply("business_search");
   }
@@ -935,23 +1145,27 @@ function buildBusinessReply(businesses, filters) {
 
   const contextParts = [];
 
-  if (filters.searchText) {
-    contextParts.push(`relacionados con ${filters.searchText}`);
+  if (appliedFilters.searchText) {
+    contextParts.push(`relacionados con ${appliedFilters.searchText}`);
   }
 
-  if (filters.category) {
-    contextParts.push(`de ${filters.category}`);
+  if (appliedFilters.category) {
+    contextParts.push(`de ${appliedFilters.category}`);
   }
 
-  if (filters.city) {
-    contextParts.push(filters.needsNearby ? `cerca de ${toTitleCase(filters.city)}` : `en ${toTitleCase(filters.city)}`);
+  if (appliedFilters.city) {
+    contextParts.push(filters.needsNearby ? `cerca de ${toTitleCase(appliedFilters.city)}` : `en ${toTitleCase(appliedFilters.city)}`);
   }
 
-  if (filters.university) {
-    contextParts.push(`en ${toTitleCase(filters.university)}`);
+  if (appliedFilters.university) {
+    contextParts.push(`en ${toTitleCase(appliedFilters.university)}`);
   }
 
   const contextText = contextParts.length ? ` ${contextParts.join(" ")}` : "";
+  if (replyMode === "alternative") {
+    return `No encontré una coincidencia exacta con todos los filtros, pero sí estos negocios${contextText}. Puedes revisarlos para comparar opciones cercanas.`;
+  }
+
   return `Encontr\u00e9 estos negocios${contextText}. Puedes entrar a su perfil para ver sus productos y datos de contacto.`;
 }
 
@@ -1002,6 +1216,19 @@ export async function handleChatbotMessage(req, res) {
       });
     }
 
+    if (["wellbeing", "thanks", "goodbye", "deescalate"].includes(intent.type)) {
+      return res.json({
+        ok: true,
+        reply: buildSocialReply(intent.type),
+        intent: intent.type,
+        assistantName: CHATBOT_NAME,
+        products: [],
+        businesses: [],
+        reservations: [],
+        suggestions: DEFAULT_SUGGESTIONS
+      });
+    }
+
     if (intent.type === "faq" && intent.faq) {
       const faqResponse = buildFaqResponse(intent.faq);
 
@@ -1030,13 +1257,12 @@ export async function handleChatbotMessage(req, res) {
     }
 
     if (intent.type === "business_search") {
-      const businesses = intent.needsNearby && !intent.city
-        ? []
-        : await findBusinesses(intent, 6);
+      const businessMatch = await findBusinessMatches(intent);
+      const businesses = businessMatch.businesses;
 
       return res.json({
         ok: true,
-        reply: buildBusinessReply(businesses, intent),
+        reply: buildBusinessReply(businesses, intent, businessMatch),
         intent: intent.type,
         assistantName: CHATBOT_NAME,
         products: [],
@@ -1047,10 +1273,8 @@ export async function handleChatbotMessage(req, res) {
     }
 
     if (["cheap_products", "recommend_products", "product_search", "fallback"].includes(intent.type)) {
-      const searchMode = intent.type === "cheap_products" ? "cheap" : "latest";
-      const products = intent.needsNearby && !intent.city
-        ? []
-        : await findProducts(intent, searchMode, 6);
+      const productMatch = await findProductMatches(intent);
+      const products = productMatch.products;
 
       if (!products.length && intent.type === "fallback") {
         const faq = detectFaq(rawMessage);
@@ -1066,7 +1290,7 @@ export async function handleChatbotMessage(req, res) {
 
       return res.json({
         ok: true,
-        reply: buildProductReply(intent.type, products, intent),
+        reply: buildProductReply(intent.type, products, intent, productMatch),
         intent: intent.type,
         assistantName: CHATBOT_NAME,
         products,
