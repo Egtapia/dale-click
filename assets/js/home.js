@@ -1,5 +1,5 @@
-const PRODUCTS_API_URL = "http://localhost:3001/api/products";
-const CATEGORIES_API_URL = "http://localhost:3001/api/products/categories";
+const PRODUCTS_API_URL = "/api/products";
+const CATEGORIES_API_URL = "/api/products/categories";
 let allHomeProducts = [];
 const DEFAULT_PRODUCTS_SECTION_TITLE = "Productos destacados";
 const DEFAULT_PRODUCTS_SECTION_DESCRIPTION =
