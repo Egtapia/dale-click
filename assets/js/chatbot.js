@@ -309,25 +309,13 @@ async function sendMessage(textFromSuggestion = "") {
         headers.Authorization = `Bearer ${token}`;
       }
 
-      const apiResponse = window.DaleClickAPI?.requestJson
-        ? await window.DaleClickAPI.requestJson(
-            CHATBOT_API_URL,
-            {
-              method: "POST",
-              headers,
-              body: JSON.stringify({ message: content })
-            },
-            "Chatbot"
-          )
-        : {
-            response: await fetch(CHATBOT_API_URL, {
-              method: "POST",
-              headers,
-              body: JSON.stringify({ message: content })
-            })
-          };
-      const response = apiResponse.response;
-      const data = apiResponse.data || await response.json();
+      const response = await fetch(CHATBOT_API_URL, {
+        method: "POST",
+        headers,
+        body: JSON.stringify({ message: content })
+      });
+
+      const data = await response.json();
       removeTyping();
 
       if (!response.ok || !data.ok) {

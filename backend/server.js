@@ -9,6 +9,7 @@ import reservationRoutes from "./routes/reservation.routes.js";
 import productRoutes from "./routes/product.routes.js";
 import businessRoutes from "./routes/business.routes.js";
 import chatbotRoutes from "./routes/chatbot.routes.js";
+import { getDatabaseRuntimeConfig, verifyDatabaseConnection } from "./config/db.js";
 
 dotenv.config();
 
@@ -18,6 +19,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const BUYER_DIR = path.join(__dirname, "../buyer");
 const ASSETS_DIR = path.join(__dirname, "../assets");
+const databaseRuntimeConfig = getDatabaseRuntimeConfig();
 
 function setNoStoreHeaders(res) {
   res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate");
@@ -80,6 +82,44 @@ app.use((req, res) => {
 
 const PORT = process.env.PORT || 3001;
 
-app.listen(PORT, () => {
-  console.log(`Servidor corriendo en http://localhost:${PORT}`);
-});
+function logDatabaseStartupStatus() {
+  if (databaseRuntimeConfig.missingEnvVars.length > 0) {
+    console.error(
+      `[DB CONFIG] Faltan variables de entorno: ${databaseRuntimeConfig.missingEnvVars.join(", ")}`
+    );
+  }
+
+  console.log("[DB CONFIG]", {
+    host: databaseRuntimeConfig.host || "(vacio)",
+    port: databaseRuntimeConfig.port,
+    user: databaseRuntimeConfig.user || "(vacio)",
+    database: databaseRuntimeConfig.database || "(vacio)",
+    hasPassword: databaseRuntimeConfig.hasPassword,
+    useSsl: databaseRuntimeConfig.useSsl,
+    rejectUnauthorized: databaseRuntimeConfig.rejectUnauthorized
+  });
+}
+
+async function startServer() {
+  logDatabaseStartupStatus();
+
+  try {
+    const dbInfo = await verifyDatabaseConnection();
+    console.log("[DB] Conexion verificada correctamente.", dbInfo);
+  } catch (error) {
+    console.error("[DB] No se pudo verificar la conexion a MySQL.", {
+      name: error?.name || "Error",
+      message: error?.message || "Sin mensaje",
+      code: error?.code || null,
+      errno: error?.errno || null,
+      sqlState: error?.sqlState || null,
+      sqlMessage: error?.sqlMessage || null
+    });
+  }
+
+  app.listen(PORT, () => {
+    console.log(`Servidor corriendo en http://localhost:${PORT}`);
+  });
+}
+
+startServer();

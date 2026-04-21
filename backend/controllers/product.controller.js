@@ -1,5 +1,66 @@
 import pool from "../config/db.js";
 
+const DEFAULT_PRODUCT_IMAGE = "/assets/images/producto-default.svg";
+
+const GET_ALL_PRODUCTS_QUERY = `
+  SELECT
+    p.productID,
+    p.productName,
+    p.description,
+    p.price,
+    p.stock,
+    p.availabilityStatus,
+    b.businessID,
+    b.businessName,
+    b.contactPhone,
+    b.contactEmail,
+    b.city,
+    b.department,
+    c.categoryID,
+    c.categoryName,
+    (
+      SELECT pi.imageURL
+      FROM ProductImages pi
+      WHERE pi.productID = p.productID
+      ORDER BY pi.imageID DESC
+      LIMIT 1
+    ) AS imageURL
+  FROM Products p
+  INNER JOIN BusinessProfiles b ON p.businessID = b.businessID
+  INNER JOIN Categories c ON p.categoryID = c.categoryID
+  ORDER BY p.productID DESC
+`;
+
+const GET_ALL_CATEGORIES_QUERY = `
+  SELECT
+    c.categoryID,
+    c.categoryName,
+    COUNT(p.productID) AS productsCount
+  FROM Categories c
+  LEFT JOIN Products p ON p.categoryID = c.categoryID
+  GROUP BY c.categoryID, c.categoryName
+  ORDER BY c.categoryName ASC
+`;
+
+function buildDbErrorDetails(error) {
+  return {
+    name: error?.name || "Error",
+    message: error?.message || "Sin mensaje",
+    code: error?.code || null,
+    errno: error?.errno || null,
+    sqlState: error?.sqlState || null,
+    sqlMessage: error?.sqlMessage || null
+  };
+}
+
+function logDbQueryError(label, query, error) {
+  console.error(`${label}:`, buildDbErrorDetails(error));
+
+  if (query) {
+    console.error(`${label} SQL:`, query.replace(/\s+/g, " ").trim());
+  }
+}
+
 function normalizeCategoryValue(categoryName) {
   return String(categoryName ?? "")
     .toLowerCase()
@@ -28,47 +89,20 @@ function mapProduct(product) {
     ...product,
     categoryName,
     categoryValue: normalizeCategoryValue(categoryName),
-    imageURL: product.imageURL || "../assets/images/producto-default.jpg"
+    imageURL: product.imageURL || DEFAULT_PRODUCT_IMAGE
   };
 }
 
 export async function getAllProducts(req, res) {
   try {
-    const [rows] = await pool.query(`
-      SELECT
-        p.productID,
-        p.productName,
-        p.description,
-        p.price,
-        p.stock,
-        p.availabilityStatus,
-        b.businessID,
-        b.businessName,
-        b.contactPhone,
-        b.contactEmail,
-        b.city,
-        b.department,
-        c.categoryID,
-        c.categoryName,
-        (
-          SELECT pi.imageURL
-          FROM ProductImages pi
-          WHERE pi.productID = p.productID
-          ORDER BY pi.imageID DESC
-          LIMIT 1
-        ) AS imageURL
-      FROM Products p
-      INNER JOIN BusinessProfiles b ON p.businessID = b.businessID
-      INNER JOIN Categories c ON p.categoryID = c.categoryID
-      ORDER BY p.createdAt DESC, p.productID DESC
-    `);
+    const [rows] = await pool.query(GET_ALL_PRODUCTS_QUERY);
 
     return res.json({
       ok: true,
       products: rows.map(mapProduct)
     });
   } catch (error) {
-    console.error("Error getAllProducts:", error);
+    logDbQueryError("Error getAllProducts", GET_ALL_PRODUCTS_QUERY, error);
     return res.status(500).json({
       ok: false,
       message: "Error al obtener productos"
@@ -78,23 +112,14 @@ export async function getAllProducts(req, res) {
 
 export async function getAllCategories(req, res) {
   try {
-    const [rows] = await pool.query(`
-      SELECT
-        c.categoryID,
-        c.categoryName,
-        COUNT(p.productID) AS productsCount
-      FROM Categories c
-      LEFT JOIN Products p ON p.categoryID = c.categoryID
-      GROUP BY c.categoryID, c.categoryName
-      ORDER BY c.categoryName ASC
-    `);
+    const [rows] = await pool.query(GET_ALL_CATEGORIES_QUERY);
 
     return res.json({
       ok: true,
       categories: rows.map(mapCategory)
     });
   } catch (error) {
-    console.error("Error getAllCategories:", error);
+    logDbQueryError("Error getAllCategories", GET_ALL_CATEGORIES_QUERY, error);
     return res.status(500).json({
       ok: false,
       message: "Error al obtener categorias"
