@@ -1,7 +1,7 @@
 export const CHATBOT_NAME = "Clicky";
 
 export const DEFAULT_SUGGESTIONS = [
-  "Que emprendimientos hay en la UAM",
+  "Que emprendimientos hay en la UNI",
   "Quiero algo barato para comer",
   "Quiero ir a la playa y tengo 200 cordobas",
   "Como funciona Dale Click"
@@ -143,8 +143,6 @@ export const UNIVERSITY_ALIASES = {
   uni: "UNI",
   "la u": "UNI",
   "universidad nacional de ingenieria": "UNI",
-  uam: "UAM",
-  americana: "UAM",
   unan: "UNAN-Managua",
   "unan managua": "UNAN-Managua",
   "unan leon": "UNAN-Leon",

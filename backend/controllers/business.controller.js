@@ -14,7 +14,6 @@ function normalizeUniversityValue(name) {
 
   if (value.includes("keiser") && value.includes("managua")) return "keiser-managua";
   if (value.includes("keiser") && value.includes("san marcos")) return "keiser-san-marcos";
-  if (value === "uam") return "uam";
   if (value === "uni") return "uni";
 
   return value.replace(/\s+/g, "-");
@@ -24,7 +23,6 @@ const UNIVERSITY_LOGO_FALLBACKS = {
   "unan-managua": "https://www.google.com/s2/favicons?sz=256&domain_url=https://www.unan.edu.ni",
   uni: "https://www.google.com/s2/favicons?sz=256&domain_url=https://www.uni.edu.ni",
   una: "https://www.google.com/s2/favicons?sz=256&domain_url=https://www.una.edu.ni",
-  uam: "https://www.google.com/s2/favicons?sz=256&domain_url=https://www.uam.edu.ni",
   ucc: "https://www.google.com/s2/favicons?sz=256&domain_url=https://www.ucc.edu.ni",
   ucn: "https://www.google.com/s2/favicons?sz=256&domain_url=https://www.ucn.edu.ni",
   unicit: "https://www.google.com/s2/favicons?sz=256&domain_url=https://www.unicit.edu.ni",

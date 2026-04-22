@@ -1,7 +1,7 @@
 const CHATBOT_API_URL = "/api/chatbot/message";
 const CHATBOT_IMAGE_URL = "/assets/images/clicky.png";
 const CHATBOT_DEFAULT_SUGGESTIONS = [
-  "Que emprendimientos hay en la UAM",
+  "Que emprendimientos hay en Keiser University",
   "Quiero algo barato para comer",
   "Quiero ir a la playa y tengo 200 cordobas",
   "Como funciona Dale Click"

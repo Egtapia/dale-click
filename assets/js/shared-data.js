@@ -52,23 +52,6 @@ window.DALECLICK_DATA = {
       status: "Activo"
     },
     {
-      businessID: 4,
-      businessName: "Snack Point",
-      description: "Bebidas, snacks y alimentos listos para acompañarte en tu rutina diaria dentro y fuera de la universidad.",
-      category: "Alimentos",
-      type: "universitario",
-      universityName: "UAM",
-      universityValue: "uam",
-      logoURL: "../assets/images/logo-seller-5.png",
-      department: "Managua",
-      city: "Managua",
-      addressLine: "Zona UAM",
-      referenceNote: "Frente a parqueo principal",
-      contactPhone: "87878787",
-      contactEmail: "snack@email.com",
-      status: "Activo"
-    },
-    {
       businessID: 5,
       businessName: "ServiClick",
       description: "Servicios prácticos dirigidos a estudiantes, emprendedores y negocios locales con enfoque universitario.",
@@ -111,14 +94,6 @@ window.DALECLICK_DATA = {
     { businessID: 3, dayOfWeek: "Viernes", isClosed: false, openTime: "10:00", closeTime: "17:00" },
     { businessID: 3, dayOfWeek: "Sábado", isClosed: true, openTime: null, closeTime: null },
     { businessID: 3, dayOfWeek: "Domingo", isClosed: true, openTime: null, closeTime: null },
-
-    { businessID: 4, dayOfWeek: "Lunes", isClosed: false, openTime: "08:00", closeTime: "16:00" },
-    { businessID: 4, dayOfWeek: "Martes", isClosed: false, openTime: "08:00", closeTime: "16:00" },
-    { businessID: 4, dayOfWeek: "Miércoles", isClosed: false, openTime: "08:00", closeTime: "16:00" },
-    { businessID: 4, dayOfWeek: "Jueves", isClosed: false, openTime: "08:00", closeTime: "16:00" },
-    { businessID: 4, dayOfWeek: "Viernes", isClosed: false, openTime: "08:00", closeTime: "16:00" },
-    { businessID: 4, dayOfWeek: "Sábado", isClosed: false, openTime: "09:00", closeTime: "14:00" },
-    { businessID: 4, dayOfWeek: "Domingo", isClosed: true, openTime: null, closeTime: null },
 
     { businessID: 5, dayOfWeek: "Lunes", isClosed: false, openTime: "09:00", closeTime: "17:00" },
     { businessID: 5, dayOfWeek: "Martes", isClosed: false, openTime: "09:00", closeTime: "17:00" },
@@ -216,20 +191,6 @@ window.DALECLICK_DATA = {
       categoryValue: "tecnologia",
       imageURLs: [
         "../assets/images/producto-9.jpg"
-      ]
-    },
-    {
-      productID: 7,
-      businessID: 4,
-      productName: "Snack saludable",
-      description: "Snack práctico para estudiantes, ideal para llevar al campus o disfrutar durante el día.",
-      price: 120,
-      stock: 20,
-      availabilityStatus: "Disponible",
-      categoryName: "Alimentos",
-      categoryValue: "alimentos",
-      imageURLs: [
-        "/assets/images/producto-default.svg"
       ]
     },
     {

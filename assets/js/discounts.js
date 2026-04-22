@@ -63,19 +63,6 @@ document.addEventListener("DOMContentLoaded", () => {
       imageURL: ""
     },
     {
-      productID: 7,
-      productName: "Snack saludable",
-      businessName: "Snack Point",
-      oldPrice: 150,
-      newPrice: 120,
-      discountPercent: 20,
-      category: "Alimentos",
-      type: "universitario",
-      universityName: "UAM",
-      universityValue: "uam",
-      imageURL: ""
-    },
-    {
       productID: 8,
       productName: "Asesoria express",
       businessName: "ServiClick",

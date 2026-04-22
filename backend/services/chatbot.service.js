@@ -928,7 +928,7 @@ function buildClarificationReply(filters) {
     return {
       ok: true,
       reply:
-        "Puedo filtrar por cercania usando ciudad o universidad, pero necesito que me indiques una referencia real, por ejemplo Managua, San Marcos, UAM o UNI.",
+        "Puedo filtrar por cercania usando ciudad o universidad, pero necesito que me indiques una referencia real, por ejemplo Managua, San Marcos, UNI o Keiser.",
       intent: filters.intent,
       assistantName: CHATBOT_NAME,
       products: [],
