@@ -1,10 +1,10 @@
 const CHATBOT_API_URL = "/api/chatbot/message";
 const CHATBOT_IMAGE_URL = "/assets/images/clicky.png";
 const CHATBOT_DEFAULT_SUGGESTIONS = [
-  "Quiero algo barato",
-  "Mu\u00e9strame comida",
-  "Busco ropa",
-  "Quiero ver negocios locales"
+  "Que emprendimientos hay en la UAM",
+  "Quiero algo barato para comer",
+  "Quiero ir a la playa y tengo 200 cordobas",
+  "Como funciona Dale Click"
 ];
 
 function chatbotEscapeHtml(text) {
@@ -41,7 +41,51 @@ function getChatbotToken() {
   return localStorage.getItem("daleclick_token") || "";
 }
 
+function getChatbotMatchClass(label) {
+  const normalized = String(label || "").toLowerCase();
+
+  if (normalized.includes("exacta")) {
+    return "is-exact";
+  }
+
+  if (normalized.includes("alternativa")) {
+    return "is-alternative";
+  }
+
+  if (normalized.includes("sin coincidencias")) {
+    return "is-none";
+  }
+
+  return "is-neutral";
+}
+
+function renderChatbotMatchBadge(label) {
+  if (!label) return "";
+
+  return `
+    <span class="chatbot-match-badge ${getChatbotMatchClass(label)}">
+      ${chatbotEscapeHtml(label)}
+    </span>
+  `;
+}
+
+function renderChatbotSummary(payload = {}) {
+  const label = payload?.matchSummary?.label;
+
+  if (!label) return "";
+
+  return `
+    <div class="chatbot-result-summary">
+      ${renderChatbotMatchBadge(label)}
+    </div>
+  `;
+}
+
 function renderChatbotProductCard(product) {
+  const locationLabel = [product.city, product.department]
+    .filter((item) => item && String(item).trim())
+    .join(", ") || "Sin ciudad";
+
   return `
     <article class="chatbot-card">
       <div class="chatbot-card-media">
@@ -53,9 +97,12 @@ function renderChatbotProductCard(product) {
         />
       </div>
       <div class="chatbot-card-body">
-        <span class="chatbot-card-badge">${chatbotEscapeHtml(product.categoryName || "Producto")}</span>
+        <div class="chatbot-card-flags">
+          <span class="chatbot-card-badge">${chatbotEscapeHtml(product.categoryName || "Producto")}</span>
+          ${renderChatbotMatchBadge(product.matchLabel)}
+        </div>
         <h4 class="chatbot-card-title">${chatbotEscapeHtml(product.productName || "Producto sin nombre")}</h4>
-        <p class="chatbot-card-meta">${chatbotEscapeHtml(product.businessName || "Negocio local")} | ${chatbotEscapeHtml(product.city || "Sin ciudad")}</p>
+        <p class="chatbot-card-meta">${chatbotEscapeHtml(product.businessName || "Negocio local")} | ${chatbotEscapeHtml(locationLabel)}</p>
         <p class="chatbot-card-copy">${chatbotFormatPrice(product.price)} | ${chatbotEscapeHtml(product.availabilityStatus || "Disponible")}</p>
         <div class="chatbot-card-actions">
           <a class="chatbot-card-link" href="${chatbotEscapeHtml(product.detailPath || "#")}">Ver producto</a>
@@ -66,9 +113,9 @@ function renderChatbotProductCard(product) {
 }
 
 function renderChatbotBusinessCard(business) {
-  const locationLabel = business.universityName
-    ? `${business.city || "Sin ciudad"} | ${business.universityName}`
-    : (business.city || "Sin ciudad");
+  const locationParts = [business.city, business.department, business.universityName]
+    .filter((item) => item && String(item).trim());
+  const locationLabel = locationParts.join(" | ") || "Sin ciudad";
 
   return `
     <article class="chatbot-card">
@@ -81,7 +128,10 @@ function renderChatbotBusinessCard(business) {
         />
       </div>
       <div class="chatbot-card-body">
-        <span class="chatbot-card-badge">${chatbotEscapeHtml(business.categoryName || "Negocio")}</span>
+        <div class="chatbot-card-flags">
+          <span class="chatbot-card-badge">${chatbotEscapeHtml(business.categoryName || "Negocio")}</span>
+          ${renderChatbotMatchBadge(business.matchLabel)}
+        </div>
         <h4 class="chatbot-card-title">${chatbotEscapeHtml(business.businessName || "Negocio sin nombre")}</h4>
         <p class="chatbot-card-meta">${chatbotEscapeHtml(locationLabel)}</p>
         <p class="chatbot-card-copy">${chatbotEscapeHtml(business.description || "Explora sus productos disponibles.")}</p>
@@ -104,7 +154,9 @@ function renderChatbotReservationCard(reservation) {
         />
       </div>
       <div class="chatbot-card-body">
-        <span class="chatbot-card-badge">Reserva</span>
+        <div class="chatbot-card-flags">
+          <span class="chatbot-card-badge">Reserva</span>
+        </div>
         <h4 class="chatbot-card-title">${chatbotEscapeHtml(reservation.productName || "Producto")}</h4>
         <p class="chatbot-card-meta">Estado: ${chatbotEscapeHtml(reservation.orderStatus || "Pendiente")}</p>
         <p class="chatbot-card-copy">Fecha: ${chatbotEscapeHtml(chatbotFormatDate(reservation.orderDate))}</p>
@@ -233,6 +285,7 @@ document.addEventListener("DOMContentLoaded", () => {
   function appendMessage(role, text, payload = {}) {
     const wrapper = document.createElement("div");
     wrapper.className = `chatbot-message is-${role}`;
+    const summaryMarkup = role === "bot" ? renderChatbotSummary(payload) : "";
 
     let cardsMarkup = "";
 
@@ -261,6 +314,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     wrapper.innerHTML = `
+      ${summaryMarkup}
       <div class="chatbot-bubble">${chatbotEscapeHtml(text)}</div>
       ${cardsMarkup}
     `;
